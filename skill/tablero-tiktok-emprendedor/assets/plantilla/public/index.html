@@ -1,0 +1,942 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tablero TikTok</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f4fa; --card:#ffffff; --ink:#1b1730; --ink2:#575270; --ink3:#857fa0; --line:#e6e3f0;
+  --accent:#6d3df0; --accent-soft:#eee9fe; --accent-ink:#4a22c4; --c2:#d99a00; --c3:#12907f; --c4:#d1407a; --c5:#7b7596;
+  --good:#12805c; --good-bg:#e3f6ee; --warn:#a15c00; --warn-bg:#fff1d6; --bad:#c0272d; --bad-bg:#fde8e8;
+  --shadow:0 1px 2px rgba(27,23,48,.06),0 4px 16px rgba(27,23,48,.05); --side:#ffffff;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#110e1f; --card:#1b1730; --ink:#f1eefc; --ink2:#b4aed0; --ink3:#8d86ad; --line:#2e2848;
+    --accent:#9b79ff; --accent-soft:#2a2150; --accent-ink:#c7b5ff; --c2:#ffc15a; --c3:#4fd1c1; --c4:#ff8fb3; --c5:#9a94b5;
+    --good:#4ad6a0; --good-bg:#0f2e25; --warn:#ffc15a; --warn-bg:#33270c; --bad:#ff7b80; --bad-bg:#3a1517;
+    --shadow:none; --side:#16122a;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Montserrat,system-ui,sans-serif;line-height:1.45;-webkit-font-smoothing:antialiased;font-size:14px}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+.app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+.side{background:var(--side);border-right:1px solid var(--line);padding:20px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:6px}
+.brand{padding:4px 10px 16px}
+.brand b{display:block;font-size:15px;font-weight:800;line-height:1.2}
+.brand span{font-size:12px;color:var(--ink3)}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{display:flex;align-items:center;gap:12px;border:0;background:none;padding:11px 12px;border-radius:12px;font-weight:600;font-size:14px;color:var(--ink2);text-align:left}
+.nav button svg{flex:none;width:19px;height:19px}
+.nav button:hover{background:var(--accent-soft)}
+.nav button[aria-current="page"]{background:var(--accent);color:#fff}
+.side .foot{margin-top:auto;padding:10px;font-size:11px;color:var(--ink3)}
+.main{padding:22px 28px 60px;max-width:1180px;width:100%}
+.head{display:flex;flex-wrap:wrap;gap:12px 20px;justify-content:space-between;align-items:flex-end;margin-bottom:18px}
+.head h1{margin:0;font-size:22px;font-weight:800}
+.head .sub{font-size:12px;color:var(--ink3);margin-top:2px}
+.range{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{border:1px solid var(--line);background:var(--card);padding:6px 11px;border-radius:999px;font-size:12px;font-weight:600;color:var(--ink2)}
+.chips button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.dates{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink3)}
+.dates input{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:6px 8px;font-size:12px;color-scheme:light dark}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:18px}
+h2{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3);margin:26px 0 10px;font-weight:700}
+h3{margin:0 0 4px;font-size:15px}
+.hint{font-size:12px;color:var(--ink3);margin:0 0 10px}
+.verdict{display:flex;gap:16px;align-items:center}
+.dot{flex:none;width:52px;height:52px;border-radius:50%;display:grid;place-items:center}
+.dot i{width:24px;height:24px;border-radius:50%;display:block}
+.dot.good{background:var(--good-bg)} .dot.good i{background:var(--good)}
+.dot.warn{background:var(--warn-bg)} .dot.warn i{background:var(--warn)}
+.dot.bad{background:var(--bad-bg)} .dot.bad i{background:var(--bad)}
+.verdict h3{font-size:19px;font-weight:800}
+.verdict p{margin:0;color:var(--ink2);font-size:14px}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+@media(max-width:1100px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:560px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi{text-align:left;padding:14px 14px 10px;cursor:pointer;display:block;width:100%;border-width:1.5px}
+.kpi:hover{border-color:var(--accent)}
+.kpi[aria-expanded="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.kpi .l{font-size:12px;color:var(--ink2);font-weight:600}
+.kpi .v{font-size:25px;font-weight:800;margin:3px 0 1px;letter-spacing:-.02em}
+.kpi .d{font-size:11.5px;font-weight:700}
+.d.good{color:var(--good)} .d.bad{color:var(--bad)} .d.flat{color:var(--ink3)}
+.kpi svg{display:block;width:100%;height:28px;margin-top:6px}
+.kpi .more{font-size:11px;color:var(--accent-ink);font-weight:700;margin-top:4px}
+.detail{margin-top:10px;border-color:var(--accent);animation:in .18s ease}
+@keyframes in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:12px 0}
+.stat{background:var(--bg);border-radius:12px;padding:10px 12px}
+.stat .l{font-size:11.5px;color:var(--ink3);font-weight:600}
+.stat .v{font-size:18px;font-weight:800}
+.stat .s{font-size:11.5px;color:var(--ink3)}
+svg.ch{width:100%;height:auto;display:block;overflow:visible}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:6px 10px;border-radius:8px;opacity:0;transition:opacity .08s;z-index:50;white-space:nowrap}
+.stack{display:flex;height:22px;border-radius:7px;overflow:hidden;gap:2px;margin:8px 0}
+.stack i{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--ink2)}
+.legend b{color:var(--ink)}
+.sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.hb{display:grid;grid-template-columns:minmax(80px,140px) 1fr 52px;gap:10px;align-items:center;margin:7px 0;font-size:13px}
+.hb .ht{height:10px;background:var(--bg);border-radius:6px;overflow:hidden}
+.hb .ht i{display:block;height:100%;background:var(--accent);border-radius:6px}
+.hb b{text-align:right}
+.actions{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)}
+.main,.card{min-width:0}
+.action{display:flex;gap:14px;padding:14px 16px}
+.action .num{flex:none;width:30px;height:30px;border-radius:50%;background:var(--accent-soft);color:var(--accent-ink);display:grid;place-items:center;font-weight:800;font-size:14px}
+.action b{display:block;font-size:15px;margin-bottom:2px}
+.action span{font-size:13px;color:var(--ink2)}
+.action .why{display:block;margin-top:6px;font-size:12px;color:var(--ink3)}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;margin-right:6px;vertical-align:1px}
+.tag.good{background:var(--good-bg);color:var(--good)} .tag.warn{background:var(--warn-bg);color:var(--warn)} .tag.bad{background:var(--bad-bg);color:var(--bad)} .tag.info{background:var(--accent-soft);color:var(--accent-ink)}
+.linkbtn{border:0;background:none;color:var(--accent-ink);font-weight:700;font-size:13px;padding:6px 0}
+.btn{border:1px solid var(--line);background:var(--card);padding:8px 14px;border-radius:10px;font-weight:600;font-size:13px}
+.btn:hover{border-color:var(--accent)}
+.tools{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px;align-items:center}
+.tools input[type=search]{flex:1;min-width:180px;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 12px}
+.tools select{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 10px}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{padding:10px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th{font-size:11px;color:var(--ink3);font-weight:700;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;user-select:none;background:var(--card);position:sticky;top:0}
+th[aria-sort]{color:var(--accent-ink)}
+td:first-child,th:first-child{text-align:left;position:sticky;left:0;background:var(--card);z-index:1;min-width:230px;max-width:290px;white-space:normal}
+tr.row{cursor:pointer}
+tr.row:hover td{background:var(--accent-soft)}
+tr.row:hover td:first-child{background:var(--accent-soft)}
+td .cap{font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:13px}
+td .dt{font-size:11px;color:var(--ink3)}
+tr.det td{background:var(--bg);white-space:normal;text-align:left;cursor:default}
+tr.det td:first-child{position:static;max-width:none}
+.good-t{color:var(--good);font-weight:700} .bad-t{color:var(--bad);font-weight:700}
+.empty{padding:34px 16px;text-align:center;color:var(--ink2)}
+.note{font-size:12px;color:var(--ink3);margin-top:10px}
+.banner{background:var(--warn-bg);color:var(--warn);border-radius:12px;padding:10px 14px;font-size:13px;margin-bottom:14px;font-weight:600}
+.goal{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.goal input{width:90px;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:6px 8px}
+.pbar{height:10px;border-radius:6px;background:var(--bg);overflow:hidden;margin:8px 0}
+.pbar i{display:block;height:100%;background:var(--accent);border-radius:6px}
+@media(max-width:860px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed;inset:auto 0 0 0;height:auto;top:auto;z-index:20;flex-direction:row;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));border-right:0;border-top:1px solid var(--line)}
+  .brand,.side .foot{display:none}
+  .nav{flex-direction:row;width:100%;justify-content:space-around}
+  .nav button{flex-direction:column;gap:3px;font-size:10px;padding:6px 4px;flex:1;align-items:center;text-align:center}
+  .main{padding:16px 16px 96px}
+}
+/* ---- nivel BI ---- */
+.nav .short{display:none}
+@media(max-width:860px){.nav .full{display:none}.nav .short{display:inline}}
+table.plain th{cursor:default}
+table.plain td,table.plain th{white-space:normal;text-align:left}
+table.plain td:first-child,table.plain th:first-child{position:static;min-width:0;max-width:none}
+.narr ul.x{margin:0}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-bottom:6px}
+.score .ring{width:112px;height:112px}
+.score .ring .num b{font-size:30px}
+.sb{grid-template-columns:78px 1fr}
+@media(max-width:980px){.hero{grid-template-columns:minmax(0,1fr)}}
+.score{display:flex;gap:18px;align-items:center}
+.ring{flex:none;position:relative;width:132px;height:132px}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .num{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.ring .num b{font-size:34px;line-height:1;font-weight:800;letter-spacing:-.03em}
+.ring .num span{font-size:11px;color:var(--ink3);font-weight:700;margin-top:2px}
+.sbars{flex:1;min-width:0;display:grid;gap:7px}
+.sb{display:grid;grid-template-columns:86px 1fr;gap:8px;align-items:center;font-size:11.5px}
+.sb .t{height:7px;background:var(--bg);border-radius:5px;overflow:hidden}
+.sb .t i{display:block;height:100%;border-radius:5px}
+.sb em{grid-column:2;font-style:normal;color:var(--ink3);margin-top:-5px;font-size:11px}
+.band{display:inline-block;font-size:11px;font-weight:800;padding:2px 9px;border-radius:999px;margin-bottom:6px}
+.narr ul{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+.narr li{display:flex;gap:10px;font-size:13.5px;color:var(--ink2)}
+.narr li::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-top:7px}
+.narr li b{color:var(--ink)}
+.mchips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.mchips button{border:1px solid var(--line);background:var(--card);padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700;color:var(--ink2)}
+.mchips button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.lg{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12px;color:var(--ink2);margin-top:6px}
+.lg i{display:inline-block;width:18px;height:0;border-top:3px solid var(--accent);margin-right:6px;vertical-align:3px;border-radius:2px}
+.lg i.pv{border-top:2px dashed var(--ink3)}
+.fun{display:grid;gap:10px;margin-top:6px}
+.fr{display:grid;grid-template-columns:minmax(0,1fr);gap:3px}
+.fr .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12.5px}
+.fr .top b{font-size:18px;letter-spacing:-.02em}
+.fr .bar{height:26px;border-radius:8px;background:var(--bg);overflow:hidden}
+.fr .bar i{display:block;height:100%;background:var(--accent);border-radius:8px}
+.fr .cv{font-size:11.5px;color:var(--ink3)}
+.dn{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.dn svg{flex:none;width:132px;height:132px}
+.dn .lgd{flex:1;min-width:140px;display:grid;gap:5px;font-size:12.5px}
+.dn .lgd div{display:flex;justify-content:space-between;gap:8px}
+.dn .lgd span{display:flex;align-items:center;gap:6px;min-width:0}
+.cal{overflow-x:auto}
+.cal svg{display:block;max-width:100%;height:auto}
+.heat{display:grid;grid-template-columns:96px repeat(4,minmax(0,1fr));gap:4px;font-size:12px;margin-top:8px}
+.heat .h{font-size:11px;color:var(--ink3);font-weight:700;text-align:center;align-self:end;padding-bottom:2px}
+.heat .d{font-weight:700;align-self:center}
+.heat .c{border-radius:8px;padding:8px 4px;text-align:center;min-height:46px;display:grid;place-content:center;background:var(--bg);color:var(--ink3)}
+.heat .c b{font-size:13px;color:var(--ink)}
+.heat .c small{font-size:10.5px;opacity:.85}
+.acts{display:flex;gap:6px}
+.acts button{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);padding:7px 11px;border-radius:10px;font-size:12px;font-weight:600;color:var(--ink2)}
+.acts button:hover{border-color:var(--accent);color:var(--accent-ink)}
+.acts svg{width:15px;height:15px}
+@media(max-width:560px){.acts span{display:none}}
+:root[data-theme="dark"]{
+  --bg:#110e1f; --card:#1b1730; --ink:#f1eefc; --ink2:#b4aed0; --ink3:#8d86ad; --line:#2e2848;
+  --accent:#9b79ff; --accent-soft:#2a2150; --accent-ink:#c7b5ff; --c2:#ffc15a; --c3:#4fd1c1; --c4:#ff8fb3; --c5:#9a94b5;
+  --good:#4ad6a0; --good-bg:#0f2e25; --warn:#ffc15a; --warn-bg:#33270c; --bad:#ff7b80; --bad-bg:#3a1517; --shadow:none; --side:#16122a;
+}
+@media print{
+  .side,.range,.acts,.tools,.linkbtn,.chips{display:none!important}
+  .app{display:block}.main{padding:0;max-width:none}
+  body,:root{background:#fff!important}
+  .card{box-shadow:none!important;break-inside:avoid}
+}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><b id="brandName">Tablero TikTok</b><span id="brandUser"></span></div>
+    <nav class="nav" id="nav" aria-label="Secciones"></nav>
+    <div class="foot" id="foot"></div>
+  </aside>
+  <main class="main">
+    <div class="head">
+      <div><h1 id="title">Resumen</h1><div class="sub" id="sub"></div></div>
+      <div class="range" id="range"></div>
+      <div class="acts">
+        <button data-act="theme" title="Cambiar tema claro u oscuro" aria-label="Cambiar tema"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><span id="themeTxt">Tema</span></button>
+        <button data-act="full" title="Pantalla completa para presentar" aria-label="Pantalla completa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg><span>Presentar</span></button>
+        <button data-act="print" title="Imprimir o guardar como PDF" aria-label="Imprimir o PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a1 1 0 0 1-1 1h-2"/><rect x="6" y="14" width="12" height="7" rx="1"/></svg><span>PDF</span></button>
+      </div>
+    </div>
+    <div id="banner"></div>
+    <div id="content"><div class="empty">Cargando tu tablero…</div></div>
+  </main>
+</div>
+<div class="tip" id="tip"></div>
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const fmt = (n, d = 0) => Number(n).toLocaleString("es-PE", { maximumFractionDigits: d, minimumFractionDigits: d });
+const pct = (x, d = 1) => fmt(x * 100, d) + "%";
+const compact = (n) => (Math.abs(n) >= 10000 ? fmt(n / 1000, 0) + "k" : Math.abs(n) >= 1000 ? fmt(n / 1000, 1) + "k" : fmt(n));
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const sum = (a, f) => a.reduce((t, r) => t + (typeof f === "function" ? f(r) : r[f] || 0), 0);
+const median = (a) => { if (!a.length) return 0; const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+const quant = (a, q) => { if (!a.length) return 0; const s = [...a].sort((x, y) => x - y), p = (s.length - 1) * q, i = Math.floor(p); return s[i] + (s[Math.min(i + 1, s.length - 1)] - s[i]) * (p - i); };
+const addD = (s, n) => new Date(Date.parse(s + "T12:00:00Z") + n * 864e5).toISOString().slice(0, 10);
+const diffD = (a, b) => Math.round((Date.parse(b + "T12:00:00Z") - Date.parse(a + "T12:00:00Z")) / 864e5);
+const dFmt = (iso, o = { day: "numeric", month: "short" }) => new Date(iso + "T12:00:00Z").toLocaleDateString("es-PE", { ...o, timeZone: "UTC" });
+const short = (t, n = 60) => (t.length > n ? t.slice(0, n - 1).trim() + "…" : t);
+const DOW = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+const DOW_ORDER = [1, 2, 3, 4, 5, 6, 0];
+
+let DATA, OFF = -5, MIN, MAX;
+const S = { page: "resumen", from: "", to: "", kpi: null, metric: "reach", sort: { k: "fecha", dir: -1 }, open: null, q: "" };
+
+/* ---------- utilidades de datos ---------- */
+const vdate = (v) => { // fecha local del video (publicado en UTC → hora del país)
+  const ms = v.creado ? Date.parse(v.creado + "Z") : Date.parse(v.fecha + "T12:00:00Z");
+  return new Date(ms + OFF * 36e5);
+};
+const vday = (v) => vdate(v).toISOString().slice(0, 10);
+const vhour = (v) => vdate(v).getUTCHours();
+const vdow = (v) => vdate(v).getUTCDay();
+const vm = (v) => ({ ...v,
+  er: v.views ? (v.likes + v.comments + v.shares) / v.views : 0,
+  share1k: v.views ? (v.shares / v.views) * 1000 : 0,
+  fav1k: v.views ? (v.favorites / v.views) * 1000 : 0,
+  watchPct: v.dur ? v.avg_watch / v.dur : 0,
+  segK: v.views ? (v.new_followers / v.views) * 1000 : 0,
+  pvK: v.views ? (v.profile_views / v.views) * 1000 : 0,
+  fecha: vday(v) });
+const maduro = (v) => (Date.parse(DATA.actualizado) - Date.parse(v.creado ? v.creado + "Z" : v.fecha + "T12:00:00Z")) / 864e5 >= 2;
+
+function ctx() {
+  const rows = DATA.diario.filter((r) => r.date >= S.from && r.date <= S.to);
+  const len = diffD(S.from, S.to) + 1;
+  const pTo = addD(S.from, -1), pFrom = addD(pTo, -(len - 1));
+  let prev = DATA.diario.filter((r) => r.date >= pFrom && r.date <= pTo);
+  if (prev.length < Math.max(2, len * 0.6)) prev = [];
+  const all = DATA.videos.map(vm);
+  const vids = all.filter((v) => v.fecha >= S.from && v.fecha <= S.to);
+  return { rows, prev, len, all, vids, c: resumen(rows), p: prev.length ? resumen(prev) : null };
+}
+function resumen(rows) {
+  const reach = sum(rows, "reach"), inter = sum(rows, "likes") + sum(rows, "comments") + sum(rows, "shares");
+  const pv = sum(rows, "profile_views"), bio = sum(rows, "bio_clicks"), net = sum(rows, "net_followers"), lost = sum(rows, "lost");
+  return { reach, net, lost, gross: net + lost, pv, bio, inter, likes: sum(rows, "likes"), comments: sum(rows, "comments"), shares: sum(rows, "shares"),
+    er: reach ? inter / reach : 0, conv: pv ? bio / pv : 0, days: rows.length, total: rows.length ? rows.at(-1).total_followers : 0 };
+}
+const delta = (c, p) => (p ? (c - p) / Math.abs(p) : null);
+const wavg = (vids, getW, getV) => { // promedio ponderado ignorando nulos
+  const ok = vids.filter((v) => getV(v) != null && getW(v) > 0), w = sum(ok, getW);
+  return ok.length && w ? { v: sum(ok, (v) => getW(v) * getV(v)) / w, n: ok.length } : null;
+};
+function fuentesAgg(vids) {
+  const ok = vids.filter((v) => v.fuentes), w = sum(ok, "views"), m = {};
+  if (!ok.length || !w) return null;
+  ok.forEach((v) => Object.entries(v.fuentes).forEach(([k, p]) => (m[k] = (m[k] || 0) + p * v.views)));
+  return Object.entries(m).map(([k, x]) => ({ k, p: x / w })).sort((a, b) => b.p - a.p);
+}
+const FUENTE = { "For You": "Para ti (algoritmo)", Search: "Búsqueda", "Personal Profile": "Tu perfil", Follow: "Siguiendo", Sound: "Sonido", Others: "Otros", "Direct Message": "Mensajes directos" };
+
+/* ---------- gráficos ---------- */
+function bars(items, o = {}) {
+  const W = 560, H = o.h || 170, pl = 38, pb = 22, pt = 8, n = items.length;
+  if (!n) return '<div class="empty">Sin datos en este rango</div>';
+  const vals = items.map((i) => i.v), max = Math.max(...vals, 0.0001), min = Math.min(...vals, 0);
+  const y = (v) => pt + (H - pt - pb) * (1 - (v - min) / (max - min || 1));
+  const bw = (W - pl) / n, gap = Math.min(3, bw * 0.2), f = o.axis || compact;
+  let s = `<svg class="ch" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.label || "gráfico")}">`;
+  [min, (min + max) / 2, max].forEach((t) => { s += `<line x1="${pl}" x2="${W}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)"/><text x="${pl - 6}" y="${y(t) + 4}" text-anchor="end" font-size="10" fill="var(--ink3)">${f(t)}</text>`; });
+  items.forEach((it, i) => {
+    const x = pl + i * bw + gap / 2, w = Math.max(bw - gap, 1), y0 = y(0), y1 = y(it.v);
+    s += `<rect x="${x}" y="${Math.min(y0, y1)}" width="${w}" height="${Math.max(Math.abs(y0 - y1), 1)}" rx="${Math.min(4, w / 2)}" fill="var(--accent)" opacity="${it.hi === false ? 0.35 : it.hi ? 1 : o.hiAll ? 1 : 0.6}"/>`;
+    s += `<rect x="${pl + i * bw}" y="0" width="${bw}" height="${H - pb}" fill="transparent" data-tip="${esc(it.tip || it.l + ": " + f(it.v))}"/>`;
+  });
+  const step = o.every || Math.max(1, Math.ceil(n / 6));
+  items.forEach((it, i) => { if (it.xl && (o.every ? i % step === 0 : i % step === 0 || i === n - 1)) s += `<text x="${pl + i * bw + bw / 2}" y="${H - 6}" text-anchor="middle" font-size="10" fill="var(--ink3)">${esc(it.xl)}</text>`; });
+  return s + "</svg>";
+}
+function line(items, o = {}) {
+  const W = 560, H = 150, pl = 44, pb = 20, pt = 8, n = items.length;
+  if (n < 2) return '<div class="empty">Sin datos suficientes</div>';
+  const vals = items.map((i) => i.v), max = Math.max(...vals), min = Math.min(...vals);
+  const y = (v) => pt + (H - pt - pb) * (1 - (v - min) / (max - min || 1)), x = (i) => pl + (i * (W - pl - 6)) / (n - 1);
+  const pts = items.map((it, i) => `${x(i)},${y(it.v)}`).join(" ");
+  let s = `<svg class="ch" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.label || "línea")}">`;
+  [min, (min + max) / 2, max].forEach((t) => { s += `<line x1="${pl}" x2="${W}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)"/><text x="${pl - 6}" y="${y(t) + 4}" text-anchor="end" font-size="10" fill="var(--ink3)">${fmt(t)}</text>`; });
+  s += `<polygon points="${pl},${H - pb} ${pts} ${x(n - 1)},${H - pb}" fill="var(--accent)" opacity=".12"/><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>`;
+  s += `<circle cx="${x(n - 1)}" cy="${y(items[n - 1].v)}" r="4" fill="var(--accent)" stroke="var(--card)" stroke-width="2"/>`;
+  items.forEach((it, i) => { s += `<rect x="${x(i) - (W - pl) / n / 2}" y="0" width="${(W - pl) / n}" height="${H - pb}" fill="transparent" data-tip="${esc(it.tip)}"/>`; });
+  [0, n - 1].forEach((i) => (s += `<text x="${x(i)}" y="${H - 5}" text-anchor="${i ? "end" : "start"}" font-size="10" fill="var(--ink3)">${esc(items[i].xl)}</text>`));
+  return s + "</svg>";
+}
+const spark = (vals) => {
+  if (vals.length < 2) return "";
+  const max = Math.max(...vals), min = Math.min(...vals), W = 100, H = 28;
+  const p = vals.map((v, i) => `${(i * W) / (vals.length - 1)},${H - 3 - ((v - min) / (max - min || 1)) * (H - 6)}`).join(" ");
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><polyline points="${p}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>`;
+};
+const hbars = (items, o = {}) => items.map((i) => `<div class="hb"><span>${esc(i.l)}</span><div class="ht"><i style="width:${Math.min(100, (i.p / (o.max || Math.max(...items.map((x) => x.p), 0.0001))) * 100)}%"></i></div><b>${pct(i.p, o.d ?? 0)}</b></div>`).join("");
+const stack2 = (a, b, la, lb) => `<div class="stack" role="img" aria-label="${la} ${pct(a)}, ${lb} ${pct(b)}"><i style="width:${a * 100}%;background:var(--accent)"></i><i style="width:${b * 100}%;background:var(--c2)"></i></div>
+  <div class="legend"><span><i class="sw" style="background:var(--accent)"></i>${la} <b>${pct(a)}</b></span><span><i class="sw" style="background:var(--c2)"></i>${lb} <b>${pct(b)}</b></span></div>`;
+const statBox = (l, v, s = "") => `<div class="stat"><div class="l">${l}</div><div class="v">${v}</div>${s ? `<div class="s">${s}</div>` : ""}</div>`;
+const dayItems = (rows, key, f) => rows.map((r, i) => ({ l: dFmt(r.date), xl: dFmt(r.date), v: key(r), tip: `${dFmt(r.date, { weekday: "short", day: "numeric", month: "short" })}: ${(f || fmt)(key(r))}` }));
+
+/* ---------- componentes BI ---------- */
+const clamp = (v, a = 0, b = 100) => Math.max(a, Math.min(b, v));
+const lerp = (v, a, b) => clamp(((v - a) / (b - a)) * 100);
+const COLORS = ["var(--accent)", "var(--c2)", "var(--c3)", "var(--c4)", "var(--c5)"];
+const bandOf = (s) => (s >= 75 ? { t: "Excelente", c: "good" } : s >= 55 ? { t: "Bien", c: "good" } : s >= 35 ? { t: "Regular", c: "warn" } : { t: "Crítico", c: "bad" });
+
+function score(x) { // puntaje 0-100 con referencias generales para cuentas orgánicas
+  const { c, p, vids, all } = x, dR = p ? delta(c.reach, p.reach) : null;
+  const rec = (vids.filter((v) => v.views >= 300 && maduro(v)).length >= 2 ? vids : all.slice(0, 10)).filter((v) => v.views >= 300 && maduro(v));
+  const ret = rec.length ? median(rec.map((v) => v.full_rate)) : null, pw = vids.length / Math.max(x.len / 7, 1), k = c.reach ? (c.net / c.reach) * 1000 : 0;
+  const parts = [
+    { k: "Alcance", w: 20, v: dR === null ? null : lerp(dR, -0.3, 0.3), t: dR === null ? "sin comparación" : (dR >= 0 ? "+" : "") + fmt(dR * 100) + "% vs. anterior" },
+    { k: "Crecimiento", w: 20, v: lerp(k, 0, 4), t: fmt(k, 1) + " seg. por 1.000 de alcance" },
+    { k: "Engagement", w: 15, v: lerp(c.er, 0, 0.06), t: pct(c.er) + " del alcance" },
+    { k: "Retención", w: 20, v: ret === null ? null : lerp(ret, 0.03, 0.15), t: ret === null ? "sin videos" : pct(ret) + " ve el video completo" },
+    { k: "Conversión", w: 10, v: c.pv >= 30 ? lerp(c.conv, 0, 0.08) : null, t: c.pv >= 30 ? pct(c.conv) + " de visitas tocan tu enlace" : "pocas visitas" },
+    { k: "Constancia", w: 15, v: lerp(pw, 0, 4), t: fmt(pw, 1) + " videos por semana" },
+  ];
+  const ok = parts.filter((q) => q.v !== null), tw = sum(ok, "w"), total = tw ? sum(ok, (q) => q.v * q.w) / tw : 0;
+  return { total: Math.round(total), parts, band: bandOf(total) };
+}
+function ringSVG(v, col) {
+  const r = 52, C = 2 * Math.PI * r;
+  return `<svg viewBox="0 0 132 132" aria-hidden="true"><circle cx="66" cy="66" r="${r}" fill="none" stroke="var(--line)" stroke-width="12"/><circle cx="66" cy="66" r="${r}" fill="none" stroke="${col}" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(C * v) / 100} ${C}"/></svg>`;
+}
+const bandCol = (c) => (c === "good" ? "var(--good)" : c === "warn" ? "var(--warn)" : "var(--bad)");
+
+const METRICS = {
+  reach: { l: "Alcance", f: (r) => r.reach, fm: fmt },
+  net: { l: "Seguidores netos", f: (r) => r.net_followers, fm: fmt },
+  perfil: { l: "Visitas al perfil", f: (r) => r.profile_views, fm: fmt },
+  enlace: { l: "Clics al enlace", f: (r) => r.bio_clicks, fm: fmt },
+  er: { l: "Engagement", f: (r) => (r.reach ? (r.likes + r.comments + r.shares) / r.reach : 0), fm: (v) => pct(v) },
+};
+function trend(x, key) {
+  const M = METRICS[key], cur = x.rows.map((r) => ({ d: r.date, v: M.f(r) })), prev = x.prev.map((r) => ({ d: r.date, v: M.f(r) }));
+  const n = cur.length, W = 700, H = 250, pl = 46, pb = 24, pt = 12;
+  if (n < 2) return '<div class="empty">Elige un rango de al menos 2 días</div>';
+  const vals = [...cur, ...prev].map((q) => q.v), max = Math.max(...vals, 0.0001), min = Math.min(...vals, 0);
+  const y = (v) => pt + (H - pt - pb) * (1 - (v - min) / (max - min || 1)), xx = (i) => pl + (i * (W - pl - 8)) / (n - 1);
+  const path = (arr) => arr.slice(0, n).map((q, i) => `${xx(i)},${y(q.v)}`).join(" ");
+  let s = `<svg class="ch" viewBox="0 0 ${W} ${H}" role="img" aria-label="Tendencia de ${M.l}">`;
+  [min, (min + max) / 2, max].forEach((t) => { s += `<line x1="${pl}" x2="${W}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)"/><text x="${pl - 8}" y="${y(t) + 4}" text-anchor="end" font-size="11" fill="var(--ink3)">${key === "er" ? pct(t, 1) : compact(t)}</text>`; });
+  if (prev.length) s += `<polyline points="${path(prev)}" fill="none" stroke="var(--ink3)" stroke-width="2" stroke-dasharray="5 4" stroke-linejoin="round" opacity=".8"/>`;
+  s += `<polygon points="${pl},${y(Math.max(min, 0))} ${path(cur)} ${xx(n - 1)},${y(Math.max(min, 0))}" fill="var(--accent)" opacity=".13"/><polyline points="${path(cur)}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  const pk = cur.reduce((m, q, i) => (q.v > cur[m].v ? i : m), 0);
+  s += `<circle cx="${xx(pk)}" cy="${y(cur[pk].v)}" r="5" fill="var(--accent)" stroke="var(--card)" stroke-width="2"/><text x="${Math.min(Math.max(xx(pk), pl + 30), W - 40)}" y="${y(cur[pk].v) - 10}" text-anchor="middle" font-size="11" font-weight="700" fill="var(--accent-ink)">Pico ${key === "er" ? pct(cur[pk].v) : compact(cur[pk].v)}</text>`;
+  const step = Math.max(1, Math.ceil(n / 7));
+  cur.forEach((q, i) => {
+    const pv = prev[i], tp = `${dFmt(q.d, { weekday: "short", day: "numeric", month: "short" })} · Actual: ${M.fm(q.v)}${pv ? ` · Anterior (${dFmt(pv.d)}): ${M.fm(pv.v)}` : ""}`;
+    s += `<rect x="${xx(i) - (W - pl) / n / 2}" y="0" width="${(W - pl) / n}" height="${H - pb}" fill="transparent" data-tip="${esc(tp)}"/>`;
+    if (i % step === 0 || i === n - 1) s += `<text x="${xx(i)}" y="${H - 6}" text-anchor="${i === 0 ? "start" : i === n - 1 ? "end" : "middle"}" font-size="11" fill="var(--ink3)">${dFmt(q.d)}</text>`;
+  });
+  return s + `</svg><div class="lg"><span><i></i>Rango elegido</span>${prev.length ? '<span><i class="pv"></i>Periodo anterior</span>' : ""}</div>`;
+}
+function funnel(c) {
+  const steps = [
+    { l: "Personas alcanzadas", v: c.reach, cv: "Base de partida" },
+    { l: "Visitas a tu perfil", v: c.pv, cv: `${fmt(c.reach ? (c.pv / c.reach) * 1000 : 0, 1)} por cada 1.000 de alcance` },
+    { l: "Seguidores nuevos", v: Math.max(c.gross, 0), cv: `${fmt(c.reach ? (c.gross / c.reach) * 1000 : 0, 1)} por cada 1.000 de alcance` },
+    { l: "Clics a tu enlace", v: c.bio, cv: `${fmt(c.conv * 100, 1)} por cada 100 visitas al perfil` },
+  ], base = Math.log10(Math.max(c.reach, 10) + 1);
+  return `<div class="fun">${steps.map((s) => `<div class="fr"><div class="top"><span>${s.l}</span><b>${fmt(s.v)}</b></div><div class="bar"><i style="width:${Math.max(3, (Math.log10(s.v + 1) / base) * 100)}%"></i></div><div class="cv">${s.cv}</div></div>`).join("")}</div>
+    <p class="note">Las barras usan escala logarítmica para que se vean todas las etapas.</p>`;
+}
+function donut(items, center, sub) {
+  const r = 46, C = 2 * Math.PI * r, tot = sum(items, "p") || 1;
+  let off = 0, arcs = "";
+  items.forEach((it, i) => { const len = (it.p / tot) * C; arcs += `<circle cx="66" cy="66" r="${r}" fill="none" stroke="${COLORS[i % 5]}" stroke-width="20" stroke-dasharray="${Math.max(len - 2, 0)} ${C}" stroke-dashoffset="${-off}" data-tip="${esc(it.l + ": " + pct(it.p / tot, 1))}"/>`; off += len; });
+  return `<div class="dn"><svg viewBox="0 0 132 132" role="img" aria-label="${esc(center)}"><g transform="rotate(-90 66 66)">${arcs}</g><text x="66" y="64" text-anchor="middle" font-size="19" font-weight="800" fill="var(--ink)">${esc(center)}</text><text x="66" y="80" text-anchor="middle" font-size="9.5" fill="var(--ink3)">${esc(sub || "")}</text></svg>
+    <div class="lgd">${items.map((it, i) => `<div><span><i class="sw" style="background:${COLORS[i % 5]}"></i>${esc(it.l)}</span><b>${pct(it.p / tot, 1)}</b></div>`).join("")}</div></div>`;
+}
+function calendar(rows) {
+  if (!rows.length) return "";
+  const vals = rows.map((r) => r.reach), q = [0.2, 0.4, 0.6, 0.8].map((p) => quant(vals, p)), map = new Map(rows.map((r) => [r.date, r]));
+  const first = rows[0].date, wd = (new Date(first + "T12:00:00Z").getUTCDay() + 6) % 7, start = addD(first, -wd), last = rows.at(-1).date;
+  const weeks = Math.floor(diffD(start, last) / 7) + 1, cs = 18, g = 4, pl = 26, pt = 18, W = pl + weeks * (cs + g), H = pt + 7 * (cs + g);
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="${W}" role="img" aria-label="Calendario de alcance por día">`;
+  ["L", "M", "X", "J", "V", "S", "D"].forEach((d, i) => (s += `<text x="0" y="${pt + i * (cs + g) + cs - 4}" font-size="10" fill="var(--ink3)">${d}</text>`));
+  let lastM = "";
+  for (let w = 0; w < weeks; w++) {
+    const mday = addD(start, w * 7), mm = mday.slice(0, 7);
+    if (mm !== lastM) { s += `<text x="${pl + w * (cs + g)}" y="10" font-size="10" fill="var(--ink3)">${dFmt(mday, { month: "short" })}</text>`; lastM = mm; }
+    for (let d = 0; d < 7; d++) {
+      const date = addD(start, w * 7 + d), r = map.get(date);
+      if (!r) { if (date >= first && date <= last) s += `<rect x="${pl + w * (cs + g)}" y="${pt + d * (cs + g)}" width="${cs}" height="${cs}" rx="4" fill="var(--bg)"/>`; continue; }
+      const lv = r.reach <= q[0] ? 0 : r.reach <= q[1] ? 1 : r.reach <= q[2] ? 2 : r.reach <= q[3] ? 3 : 4;
+      s += `<rect x="${pl + w * (cs + g)}" y="${pt + d * (cs + g)}" width="${cs}" height="${cs}" rx="4" fill="var(--accent)" opacity="${[0.14, 0.3, 0.5, 0.75, 1][lv]}" data-tip="${esc(dFmt(date, { weekday: "short", day: "numeric", month: "short" }) + ": " + fmt(r.reach) + " personas · " + (r.net_followers >= 0 ? "+" : "") + fmt(r.net_followers) + " seguidores")}"/>`;
+    }
+  }
+  return s + `</svg><div class="legend" style="margin-top:8px"><span>Menos</span>${[0.14, 0.3, 0.5, 0.75, 1].map((o) => `<i class="sw" style="background:var(--accent);opacity:${o}"></i>`).join("")}<span>Más alcance</span></div>`;
+}
+function scatter(vids) {
+  const vv = vids.filter((v) => v.views > 0);
+  if (vv.length < 3) return '<div class="empty">Necesitas al menos 3 videos en el rango para ver el mapa. Amplía las fechas.</div>';
+  const W = 640, H = 340, pl = 50, pb = 38, pt = 14, pr = 16;
+  const xs = vv.map((v) => v.views), lo = Math.log10(Math.max(Math.min(...xs) * 0.7, 10)), hi = Math.log10(Math.max(...xs) * 1.3);
+  const ymax = Math.max(...vv.map((v) => v.full_rate)) * 1.2, X = (v) => pl + ((Math.log10(Math.max(v, 10)) - lo) / (hi - lo || 1)) * (W - pl - pr), Y = (v) => pt + (H - pt - pb) * (1 - v / ymax);
+  const mx = median(xs), my = median(vv.map((v) => v.full_rate)), mv = Math.max(...vv.map((v) => v.new_followers), 1);
+  let s = `<svg class="ch" viewBox="0 0 ${W} ${H}" role="img" aria-label="Mapa de videos: vistas contra retención">`;
+  for (let i = 0; i <= 4; i++) { const t = (ymax * i) / 4; s += `<line x1="${pl}" x2="${W - pr}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--line)"/><text x="${pl - 8}" y="${Y(t) + 4}" text-anchor="end" font-size="10.5" fill="var(--ink3)">${pct(t, 0)}</text>`; }
+  for (let e = Math.floor(lo); e <= hi; e++) [1, 2, 5].forEach((m) => { const v = m * 10 ** e; if (Math.log10(v) >= lo && Math.log10(v) <= hi) s += `<text x="${X(v)}" y="${H - 20}" text-anchor="middle" font-size="10.5" fill="var(--ink3)">${compact(v)}</text>`; });
+  s += `<line x1="${X(mx)}" x2="${X(mx)}" y1="${pt}" y2="${H - pb}" stroke="var(--ink3)" stroke-dasharray="4 4" opacity=".6"/><line x1="${pl}" x2="${W - pr}" y1="${Y(my)}" y2="${Y(my)}" stroke="var(--ink3)" stroke-dasharray="4 4" opacity=".6"/>`;
+  s += `<text x="${W - pr - 4}" y="${pt + 12}" text-anchor="end" font-size="11" font-weight="700" fill="var(--good)">★ Estrellas</text><text x="${pl + 6}" y="${pt + 12}" font-size="11" font-weight="700" fill="var(--c3)">💎 Joyas escondidas</text><text x="${W - pr - 4}" y="${H - pb - 8}" text-anchor="end" font-size="11" font-weight="700" fill="var(--warn)">Alcance sin retención</text><text x="${pl + 6}" y="${H - pb - 8}" font-size="11" font-weight="700" fill="var(--ink3)">Para revisar</text>`;
+  [...vv].sort((a, b) => b.new_followers - a.new_followers).forEach((v) => {
+    const r = 6 + Math.sqrt(v.new_followers / mv) * 16, star = v.views >= mx && v.full_rate >= my;
+    s += `<circle cx="${X(v.views)}" cy="${Y(v.full_rate)}" r="${r}" fill="${star ? "var(--good)" : v.views < mx && v.full_rate >= my ? "var(--c3)" : "var(--accent)"}" opacity=".62" stroke="var(--card)" stroke-width="2" data-tip="${esc(short(v.caption, 70) + " · " + fmt(v.views) + " vistas · " + pct(v.full_rate) + " lo ve completo · " + fmt(v.new_followers) + " seguidores nuevos")}"/>`;
+  });
+  s += `<text x="${(pl + W - pr) / 2}" y="${H - 4}" text-anchor="middle" font-size="11" fill="var(--ink2)" font-weight="600">Vistas (escala logarítmica) →</text></svg>`;
+  return s + `<p class="note">Cada burbuja es un video; su tamaño es la cantidad de seguidores que trajo. Las líneas punteadas marcan tu mediana de vistas y de retención.</p>`;
+}
+function narrativa(x) {
+  const { c, p, vids, rows } = x, out = [], dR = p ? delta(c.reach, p.reach) : null;
+  const top = [...vids].sort((a, b) => b.views - a.views)[0], best = [...rows].sort((a, b) => b.reach - a.reach)[0];
+  out.push(dR === null ? `Alcanzaste a <b>${fmt(c.reach)}</b> personas en ${rows.length} días.` : `Tu alcance <b>${dR >= 0 ? "subió" : "bajó"} ${fmt(Math.abs(dR) * 100)}%</b> frente al periodo anterior (${fmt(c.reach)} personas).`);
+  if (top) out.push(`Tu video con más vistas fue <b>«${esc(short(top.caption, 55))}»</b> con ${fmt(top.views)} vistas y ${fmt(top.new_followers)} seguidores nuevos.`);
+  else if (best) out.push(`Tu mejor día fue el <b>${dFmt(best.date, { weekday: "long", day: "numeric", month: "long" })}</b> con ${fmt(best.reach)} personas.`);
+  const nf = wavg(vids.length ? vids : x.all.slice(0, 10), (v) => v.views, (v) => v.no_seg);
+  out.push(nf ? `El <b>${pct(nf.v, 0)}</b> de tus vistas viene de personas que <b>no te siguen</b>: ${nf.v > 0.7 ? "estás llegando a gente nueva." : "tu comunidad actual sostiene tu alcance."}` : `Ganaste <b>${fmt(c.net)}</b> seguidores netos (${fmt(c.gross)} entraron y ${fmt(c.lost)} se fueron).`);
+  return out;
+}
+
+/* ---------- reglas de recomendaciones ---------- */
+function ventana(act) { // mejor ventana de 3 horas seguidas (hora local)
+  if (!act || act.length < 12) return null;
+  const loc = Array.from({ length: 24 }, (_, L) => ({ L, n: (act.find((a) => a.h === ((L - OFF + 48) % 24)) || { n: 0 }).n }));
+  let best = null;
+  for (let s = 0; s < 24; s++) { const t = loc[s].n + loc[(s + 1) % 24].n + loc[(s + 2) % 24].n; if (!best || t > best.t) best = { s, t }; }
+  return { loc, s: best.s, e: (best.s + 3) % 24 };
+}
+const hh = (h) => String(h).padStart(2, "0") + ":00";
+function recomendaciones(x) {
+  const out = [], { all, c, rows } = x, vids = all.filter((v) => v.views >= 1000 && maduro(v));
+  const ahora = new Date(DATA.actualizado);
+  const avgSegK = vids.length ? (sum(vids, "new_followers") / sum(vids, "views")) * 1000 : 0;
+  if (vids.length >= 3) {
+    const best = [...vids].sort((a, b) => b.segK - a.segK)[0];
+    out.push({ pri: 1, tag: ["good", "Replicar"], t: `Haz otro video como «${short(best.caption, 55)}»`,
+      d: `Es el que más seguidores trae por cada 1.000 vistas: ${fmt(best.segK, 1)} vs. ${fmt(avgSegK, 1)} en promedio. Mismo tema o formato, otro ángulo.`,
+      why: `${fmt(best.views)} vistas · ${fmt(best.new_followers)} seguidores nuevos · ${pct(best.full_rate)} lo vio completo` });
+    const med = median(vids.map((v) => v.full_rate)), worst = [...vids].sort((a, b) => a.full_rate - b.full_rate)[0];
+    if (med < 0.1) out.push({ pri: 2, tag: ["bad", "Corregir"], t: "Tus videos pierden a la gente al inicio",
+      d: `Solo el ${pct(med)} suele verlos completos. Abre con el resultado o la promesa en los primeros 3 segundos y recorta lo que sobre.`,
+      why: `El más flojo: «${short(worst.caption, 50)}» (${pct(worst.full_rate)} lo ve completo, dura ${fmt(worst.dur)} s)` });
+    else if (worst.full_rate < 0.06) out.push({ pri: 3, tag: ["warn", "Evitar"], t: `No repitas el formato de «${short(worst.caption, 45)}»`,
+      d: `Solo el ${pct(worst.full_rate)} lo vio completo. Prueba un gancho más fuerte o un video más corto.`, why: `${fmt(worst.views)} vistas · dura ${fmt(worst.dur)} s` });
+    // duración
+    const largos = vids.filter((v) => v.dur >= 60), cortos = vids.filter((v) => v.dur < 60);
+    if (largos.length >= 2 && cortos.length >= 2) {
+      const rl = median(largos.map((v) => v.full_rate)), rc = median(cortos.map((v) => v.full_rate));
+      if (Math.abs(rl - rc) > 0.02) out.push({ pri: 3, tag: ["info", "Probar"], t: rl > rc ? "Tus videos largos (más de 60 s) retienen mejor" : "Tus videos cortos (menos de 60 s) retienen mejor",
+        d: rl > rc ? "Cuando prometes un tutorial completo, la gente se queda. Úsalo para videos de valor y deja los cortos para ideas rápidas." : "Ve directo al punto: recorta pausas y entrega el valor en menos de un minuto.",
+        why: `Se ve completo: ${pct(rl)} en largos (${largos.length}) vs. ${pct(rc)} en cortos (${cortos.length})` });
+    }
+    // joyas escondidas
+    const medV = median(vids.map((v) => v.views)), joya = vids.filter((v) => v.views < medV && v.segK > avgSegK * 1.5 && v.new_followers >= 2).sort((a, b) => b.segK - a.segK)[0];
+    if (joya) out.push({ pri: 4, tag: ["good", "Impulsar"], t: `«${short(joya.caption, 50)}» convierte bien pero pocos lo vieron`,
+      d: "Convierte vistas en seguidores mejor que tu promedio. Dale una segunda vida: repítelo con otro gancho o impúlsalo con una promoción pequeña.", why: `${fmt(joya.views)} vistas · ${fmt(joya.segK, 1)} seguidores por cada 1.000 vistas` });
+  }
+  if (c.pv >= 50 && c.conv < 0.05) out.push({ pri: 2, tag: ["warn", "Convertir"], t: "Pocas visitas a tu perfil terminan tocando tu enlace",
+    d: `De cada 100 visitas, solo ${fmt(c.conv * 100, 1)} tocan el enlace de tu bio. Di el llamado a la acción en voz alta ("el enlace está en mi perfil") y deja un video fijado con la oferta.`, why: `${fmt(c.pv)} visitas al perfil → ${fmt(c.bio)} clics en el enlace` });
+  // horario
+  const w = ventana(DATA.actividad);
+  if (w && vids.length >= 5) {
+    const dentro = vids.filter((v) => { const h = vhour(v); return [0, 1, 2].some((k) => (w.s + k) % 24 === h); }).length;
+    if (dentro / vids.length < 0.4) out.push({ pri: 2, tag: ["warn", "Horario"], t: `Publica entre ${hh(w.s)} y ${hh(w.e)}`,
+      d: "Es cuando más seguidores tuyos están conectados. Sube el video 30-60 minutos antes para que TikTok empiece a mostrarlo cuando entra tu audiencia.", why: `Solo ${dentro} de tus ${vids.length} últimos videos salieron en esa franja (hora local)` });
+  }
+  // fuentes y audiencia
+  const fa = fuentesAgg(all.filter((v) => v.fecha >= addD(MAX, -60)));
+  const fyp = fa && fa.find((f) => f.k === "For You"), bus = fa && fa.find((f) => f.k === "Search");
+  if (fyp && fyp.p > 0.85) out.push({ pri: 3, tag: ["info", "Diversificar"], t: "Casi todo tu alcance depende del algoritmo «Para ti»",
+    d: `Para construir comunidad estable: pon palabras que tu cliente busca en el texto del video (hoy la búsqueda aporta ${pct(bus ? bus.p : 0)}) y cierra cada video invitando a seguirte.`, why: `Para ti: ${pct(fyp.p)} de tus vistas recientes` });
+  const nf = wavg(all.filter((v) => v.fecha >= addD(MAX, -60)), (v) => v.views, (v) => v.no_seg);
+  if (nf && nf.v > 0.7) out.push({ pri: 3, tag: ["info", "Retener"], t: "Llegas a mucha gente nueva: aprovéchala",
+    d: `El ${pct(nf.v, 0)} de tus vistas viene de personas que no te siguen. Cierra con «sígueme para la parte 2» o una serie, para convertir a esos curiosos en seguidores.`, why: `Basado en ${nf.n} videos de los últimos 60 días` });
+  // frecuencia
+  const sem = all.filter((v) => (ahora - Date.parse(v.creado ? v.creado + "Z" : v.fecha + "T12:00:00Z")) / 864e5 <= 7);
+  const ultF = all.reduce((m, v) => (v.fecha > m ? v.fecha : m), ""), ult = ultF ? Math.max(0, Math.floor((ahora - Date.parse(ultF + "T12:00:00Z")) / 864e5)) : null;
+  if (sem.length < 4) out.push({ pri: 3, tag: ["warn", "Publicar"], t: `Publica ${4 - sem.length} video${4 - sem.length > 1 ? "s" : ""} más esta semana`,
+    d: "La cuenta crece en picos: un video que pega arrastra al resto. Más intentos = más probabilidad de otro pico.",
+    why: `Últimos 7 días: ${sem.length} video${sem.length === 1 ? "" : "s"}${ult !== null ? " · el último fue " + (ult <= 1 ? "ayer o hoy" : "hace " + ult + " días") : ""}` });
+  // pico
+  if (rows.length >= 5) {
+    const m = median(rows.map((r) => r.reach)), top = [...rows].sort((a, b) => b.reach - a.reach)[0];
+    if (m > 0 && top.reach >= 2.5 * m) {
+      const cand = all.filter((v) => { const dd = diffD(v.fecha, top.date); return dd >= 0 && dd <= 2; }).sort((a, b) => b.views - a.views)[0];
+      out.push({ pri: 4, tag: ["good", "Aprender"], t: `Tu mejor día fue el ${dFmt(top.date, { weekday: "long", day: "numeric", month: "long" })}`,
+        d: `Alcanzaste a ${fmt(top.reach)} personas, ${fmt(top.reach / m, 1)}× tu día normal.${cand ? ` Lo más probable: «${short(cand.caption, 50)}». Úsalo de plantilla.` : ""}`, why: `Día típico: ${fmt(m)} personas` });
+    }
+  }
+  if (c.gross > 20 && c.lost / c.gross > 0.4) out.push({ pri: 3, tag: ["bad", "Retener"], t: "Estás perdiendo muchos de los seguidores que ganas",
+    d: `Por cada 10 que llegan, se van ${fmt((c.lost / c.gross) * 10)}. Revisa que tus videos nuevos sigan el tema por el que te siguieron.`, why: `${fmt(c.gross)} entraron · ${fmt(c.lost)} se fueron` });
+  out.sort((a, b) => a.pri - b.pri);
+  if (!out.length) out.push({ pri: 9, tag: ["good", "Mantener"], t: "Sigue con lo que estás haciendo", d: "No hay alertas. Mantén la frecuencia y el estilo.", why: "" });
+  return out;
+}
+const actionHTML = (list) => `<div class="actions">${list.map((a, i) => `<div class="card action"><div class="num">${i + 1}</div><div><b><span class="tag ${a.tag[0]}">${a.tag[1]}</span>${esc(a.t)}</b><span>${esc(a.d)}</span>${a.why ? `<span class="why">${esc(a.why)}</span>` : ""}</div></div>`).join("")}</div>`;
+
+/* ---------- páginas ---------- */
+function veredicto(c, p) {
+  const dR = p ? delta(c.reach, p.reach) : null, dN = p ? delta(c.net, p.net) : null;
+  const s = (v) => (v === null ? 0 : v > 0.1 ? 1 : v < -0.1 ? -1 : 0), f = (v) => (v === null ? "" : " (" + (v >= 0 ? "+" : "") + fmt(v * 100) + "%)");
+  const score = s(dR) + s(dN);
+  const txt = `Alcanzaste a ${fmt(c.reach)} personas${f(dR)} y ganaste ${fmt(c.net)} seguidores netos${f(dN)}${p ? " frente al periodo anterior" : ""}.`;
+  return score >= 1 ? { cls: "good", t: "Vas en buen camino", txt } : score === 0 ? { cls: "warn", t: "Estable, pero puedes más", txt } : { cls: "bad", t: "Este periodo bajó, hay que reaccionar", txt };
+}
+const KPIS = [
+  { id: "alcance", l: "Alcance", val: (c) => fmt(c.reach), cur: (c) => c.reach, ser: (r) => r.reach },
+  { id: "crecimiento", l: "Crecimiento", val: (c) => (c.net >= 0 ? "+" : "") + fmt(c.net), cur: (c) => c.net, ser: (r) => r.net_followers, sub: "seguidores netos" },
+  { id: "interaccion", l: "Engagement", val: (c) => pct(c.er), cur: (c) => c.er, ser: (r) => (r.reach ? (r.likes + r.comments + r.shares) / r.reach : 0) },
+  { id: "perfil", l: "Visitas al perfil", val: (c) => fmt(c.pv), cur: (c) => c.pv, ser: (r) => r.profile_views },
+  { id: "enlace", l: "Clics al enlace", val: (c) => fmt(c.bio), cur: (c) => c.bio, ser: (r) => r.bio_clicks },
+];
+function pageResumen(x) {
+  const { rows, c, p } = x, v = veredicto(c, p);
+  const kp = KPIS.map((k) => { const d = p ? delta(k.cur(c), k.cur(p)) : null;
+    const up = d > 0.02, dn = d < -0.02, cls = d === null ? "flat" : up ? "good" : dn ? "bad" : "flat";
+    return `<button class="card kpi" data-kpi="${k.id}" aria-expanded="${S.kpi === k.id}"><div class="l">${k.l}</div><div class="v">${k.val(c)}</div>
+      <div class="d ${cls}">${d === null ? "sin comparación" : (up ? "▲ " : dn ? "▼ " : "• ") + (d >= 0 ? "+" : "") + fmt(d * 100) + "% vs. anterior"}</div>${spark(rows.map(k.ser))}<div class="more">${S.kpi === k.id ? "Ocultar detalle" : "Ver detalle"}</div></button>`; }).join("");
+  const sc = score(x), nar = narrativa(x), sp = S.metric || "reach", w = x.vids.length ? x.vids : x.all.slice(0, 10);
+  const nf = wavg(w, (q) => q.views, (q) => q.no_seg), fa = fuentesAgg(w);
+  const fa5 = fa ? (() => { const top = fa.filter((f) => f.k !== "Others" && f.p >= 0.02).slice(0, 4), rest = 1 - sum(top, "p"); return [...top.map((f) => ({ l: FUENTE[f.k] || f.k, p: f.p })), ...(rest > 0.005 ? [{ l: "Otros", p: rest }] : [])]; })() : null;
+  const who = nf || fa5 ? `${nf ? `<h3>Seguidores vs. gente nueva</h3><p class="hint">Quién ve tus videos</p>${donut([{ l: "No te siguen", p: nf.v }, { l: "Te siguen", p: 1 - nf.v }], pct(nf.v, 0), "gente nueva")}` : ""}
+    ${fa5 ? `<h3 style="margin-top:16px">¿De dónde vienen las vistas?</h3>${donut(fa5, pct(fa5[0].p, 0), fa5[0].l.split(" (")[0])}` : ""}` : '<div class="empty">Este dato aparecerá tras la próxima actualización diaria.</div>';
+  return `<div class="hero">
+    <section class="card score" aria-label="Puntaje de la cuenta"><div class="ring">${ringSVG(sc.total, bandCol(sc.band.c))}<div class="num"><b>${sc.total}</b><span>de 100</span></div></div>
+      <div class="sbars"><div><span class="tag ${sc.band.c}">${sc.band.t}</span> <b style="font-size:14px">Puntaje de tu cuenta</b></div>
+      ${sc.parts.map((q) => `<div class="sb"><span>${q.k}</span><div class="t"><i style="width:${q.v ?? 0}%;background:${q.v == null ? "var(--line)" : bandCol(bandOf(q.v).c)}"></i></div><em>${q.t}</em></div>`).join("")}</div></section>
+    <section class="card narr"><div class="verdict"><div class="dot ${v.cls}" aria-hidden="true"><i></i></div><div><h3>${v.t}</h3><p>${v.txt}</p></div></div><ul>${nar.map((l) => `<li><span>${l}</span></li>`).join("")}</ul>
+      <p class="note">El puntaje usa referencias generales de cuentas orgánicas. Úsalo para ver tu evolución, no como una calificación absoluta.</p></section></div>
+  <h2>Tus números · toca uno para ver el detalle</h2><div class="kpis">${kp}</div><div id="kdetail"></div>
+  <h2>Tendencia</h2><div class="card"><div class="mchips" role="group" aria-label="Métrica">${Object.entries(METRICS).map(([k, m]) => `<button data-metric="${k}" aria-pressed="${k === sp}">${m.l}</button>`).join("")}</div>${trend(x, sp)}</div>
+  <div class="grid2" style="margin-top:14px"><div class="card"><h3>Embudo: del alcance al enlace</h3><p class="hint">Cómo se convierte tu audiencia en este rango</p>${funnel(x.c)}</div><div class="card">${who}</div></div>
+  <h2>Calendario de alcance</h2><div class="card cal"><p class="hint" style="margin-top:0">Cada cuadro es un día; más oscuro significa más personas alcanzadas.</p>${calendar(rows)}</div>
+  <h2>Qué hacer ahora</h2>${actionHTML(recomendaciones(x).slice(0, 3))}<button class="linkbtn" data-go="recomendaciones">Ver todas las recomendaciones →</button>
+  <p class="note">Los últimos 1-2 días no se muestran porque TikTok aún los está procesando. «Alcance» suma las personas únicas de cada día, por lo que una misma persona puede contarse en varios días.</p>`;
+}
+function kdetail(x) {
+  const { rows, c, p, vids } = x, id = S.kpi;
+  if (!id) return "";
+  const best = [...rows].sort((a, b) => b.reach - a.reach)[0];
+  let h = "";
+  if (id === "alcance") {
+    const nf = wavg(vids, (v) => v.views, (v) => v.no_seg), src = fuentesAgg(vids);
+    const base = nf ? "" : (() => { const r = wavg(x.all.slice(0, 10), (v) => v.views, (v) => v.no_seg); return r ? " (con tus últimos videos, porque no publicaste en este rango)" : ""; })();
+    const nf2 = nf || wavg(x.all.slice(0, 10), (v) => v.views, (v) => v.no_seg), src2 = src || fuentesAgg(x.all.slice(0, 10));
+    h = `<div class="grid2"><div><h3>Alcance por día</h3><p class="hint">Personas distintas que vieron tus videos cada día</p>${bars(dayItems(rows, (r) => r.reach), { label: "Alcance por día" })}
+      <div class="stats">${statBox("Promedio diario", fmt(c.reach / (rows.length || 1)))}${statBox("Mejor día", fmt(best ? best.reach : 0), best ? dFmt(best.date) : "")}${statBox("Día típico", fmt(median(rows.map((r) => r.reach))), "mediana")}</div></div>
+      <div><h3>¿De quién es tu alcance?</h3><p class="hint">Gente que te sigue vs. gente que no te sigue${base}</p>
+      ${nf2 ? stack2(1 - nf2.v, nf2.v, "Seguidores", "No te siguen") + `<p class="note">${pct(nf2.v, 0)} de tus vistas vienen de personas nuevas. Calculado con ${nf2.n} videos, ponderado por vistas.</p>` : '<div class="empty">Este dato aparecerá tras la próxima actualización diaria.</div>'}
+      ${src2 ? `<h3 style="margin-top:16px">De dónde te ven</h3>${hbars(src2.filter((s) => s.p >= 0.005).slice(0, 5).map((s) => ({ l: FUENTE[s.k] || s.k, p: s.p })), { d: 1, max: 1 })}` : ""}</div></div>`;
+  } else if (id === "crecimiento") {
+    const lastM = S.to.slice(0, 7), mrows = DATA.diario.filter((r) => r.date.startsWith(lastM)), mnet = sum(mrows, "net_followers");
+    const dim = new Date(+lastM.slice(0, 4), +lastM.slice(5), 0).getDate(), pace = mrows.length ? (mnet / mrows.length) * dim : 0;
+    let goal = 0; try { goal = +localStorage.getItem("meta-" + lastM) || 0; } catch (e) {}
+    h = `<div class="grid2"><div><h3>Seguidores netos por día</h3><p class="hint">Nuevos menos los que se fueron</p>${bars(dayItems(rows, (r) => r.net_followers), { label: "Seguidores netos por día" })}
+      <div class="stats">${statBox("Ganaste", fmt(c.gross), "seguidores nuevos")}${statBox("Perdiste", fmt(c.lost), c.gross ? pct(c.lost / c.gross, 0) + " de los que llegaron" : "")}${statBox("Por cada 1.000 de alcance", fmt(c.reach ? (c.net / c.reach) * 1000 : 0, 1), "seguidores netos")}</div></div>
+      <div><h3>Seguidores totales</h3><p class="hint">Evolución de tu comunidad: ${fmt(c.total)} hoy</p>${line(rows.map((r) => ({ v: r.total_followers, xl: dFmt(r.date), tip: dFmt(r.date) + ": " + fmt(r.total_followers) })), { label: "Seguidores totales" })}
+      <h3 style="margin-top:16px">Meta de ${new Date(lastM + "-15T12:00:00Z").toLocaleDateString("es-PE", { month: "long", timeZone: "UTC" })}</h3>
+      <div class="goal"><label for="goalIn" class="hint" style="margin:0">Meta de seguidores netos</label><input id="goalIn" type="number" min="0" value="${goal || ""}" placeholder="Ej. 800"></div>
+      ${goal ? `<div class="pbar"><i style="width:${Math.max(0, Math.min(100, (mnet / goal) * 100))}%"></i></div><p class="note" style="margin:0">Llevas <b>${fmt(mnet)}</b> de ${fmt(goal)} (${pct(mnet / goal, 0)}). A este ritmo cerrarás el mes con unos <b>${fmt(pace)}</b>${pace >= goal ? ", así que vas a cumplirla." : ", te faltaría un poco."}</p>` : '<p class="note">Escribe una meta y verás tu avance y la proyección del mes.</p>'}</div></div>`;
+  } else if (id === "interaccion") {
+    const tot = c.inter || 1, fav = sum(vids, "favorites");
+    h = `<div class="grid2"><div><h3>Engagement por día</h3><p class="hint">(Me gusta + comentarios + compartidos) ÷ alcance</p>${bars(dayItems(rows, (r) => (r.reach ? (r.likes + r.comments + r.shares) / r.reach : 0), (v) => pct(v)), { label: "Engagement por día", axis: (v) => pct(v, 0) })}</div>
+      <div><h3>Qué hace tu gente</h3><p class="hint">Interacciones del periodo: ${fmt(c.inter)}</p>
+      ${hbars([{ l: "Me gusta", p: c.likes / tot }, { l: "Compartidos", p: c.shares / tot }, { l: "Comentarios", p: c.comments / tot }], { max: 1 })}
+      <div class="stats">${statBox("Engagement", pct(c.er), p ? "antes " + pct(p.er) : "")}${statBox("Compartidos / 1.000 alcance", fmt(c.reach ? (c.shares / c.reach) * 1000 : 0, 1), "lo que más viraliza")}${vids.length && fav ? statBox("Guardados", fmt(fav), "en videos del periodo") : ""}</div>
+      <p class="note">Los compartidos pesan más para el algoritmo: un video que se comparte llega a gente nueva.</p></div></div>`;
+  } else if (id === "perfil") {
+    h = `<div class="grid2"><div><h3>Visitas al perfil por día</h3><p class="hint">Gente que entró a ver tu perfil después de ver un video</p>${bars(dayItems(rows, (r) => r.profile_views), { label: "Visitas al perfil por día" })}</div>
+      <div><div class="stats">${statBox("Visitas totales", fmt(c.pv), p ? "antes " + fmt(p.pv) : "")}${statBox("Por cada 1.000 de alcance", fmt(c.reach ? (c.pv / c.reach) * 1000 : 0, 1), "curiosidad que despiertas")}${statBox("Tocan tu enlace", pct(c.conv, 1), "de quienes visitan")}</div>
+      <p class="note">Si muchas personas visitan tu perfil pero pocas tocan el enlace, mejora el texto de tu bio y fija un video que explique tu oferta.</p></div></div>`;
+  } else {
+    const bb = [...rows].sort((a, b) => b.bio_clicks - a.bio_clicks)[0];
+    h = `<div class="grid2"><div><h3>Clics al enlace por día</h3><p class="hint">Quienes tocaron el link de tu bio</p>${bars(dayItems(rows, (r) => r.bio_clicks), { label: "Clics al enlace por día" })}</div>
+      <div><div class="stats">${statBox("Clics totales", fmt(c.bio), p ? "antes " + fmt(p.bio) : "")}${statBox("Por cada 100 visitas", fmt(c.conv * 100, 1), "conversión del perfil")}${statBox("Mejor día", fmt(bb ? bb.bio_clicks : 0), bb ? dFmt(bb.date) : "")}</div>
+      <p class="note">Dilo en voz alta en el video («el enlace está en mi perfil») y verás cómo suben los clics ese día.</p></div></div>`;
+  }
+  return `<div class="card detail">${h}</div>`;
+}
+
+function franja(h) { return h < 6 ? 0 : h < 12 ? 1 : h < 18 ? 2 : 3; }
+const FR = ["Madrugada (0-6 h)", "Mañana (6-12 h)", "Tarde (12-18 h)", "Noche (18-24 h)"];
+function pageHorario(x) {
+  const all = x.all.filter(maduro), w = ventana(DATA.actividad), hist = DATA.diario;
+  let sec1 = '<div class="card"><div class="empty">Aún no hay datos de horas de actividad. Aparecerán tras la próxima actualización diaria.</div></div>';
+  if (w) {
+    const top = [...w.loc].sort((a, b) => b.n - a.n).slice(0, 3).map((l) => l.L), inW = (L) => [0, 1, 2].some((k) => (w.s + k) % 24 === L);
+    sec1 = `<div class="card"><h3>Tu mejor ventana: ${hh(w.s)} a ${hh(w.e)}</h3><p class="hint">Seguidores conectados en promedio por hora (hora de tu país, últimos 7 días). La ventana de 3 horas más fuerte está resaltada.</p>
+      ${bars(w.loc.map((l) => ({ l: hh(l.L), xl: l.L % 3 === 0 ? l.L + "h" : "", v: l.n, hi: inW(l.L), tip: `${hh(l.L)}: ${fmt(l.n)} seguidores conectados` })), { label: "Seguidores conectados por hora", every: 1, h: 190 })}
+      <p class="note">Regla práctica: publica entre 30 y 60 minutos antes de que empiece tu ventana, para que TikTok muestre el video cuando tu audiencia entra. Horas más fuertes: ${top.sort((a, b) => a - b).map(hh).join(", ")}.</p></div>`;
+  }
+  const dm = DOW_ORDER.map((d) => {
+    const dr = hist.filter((r) => new Date(r.date + "T12:00:00Z").getUTCDay() === d), vs = all.filter((v) => vdow(v) === d);
+    return { d, n: dr.length, reach: dr.length ? sum(dr, "reach") / dr.length : 0, net: dr.length ? sum(dr, "net_followers") / dr.length : 0, nv: vs.length, views: vs.length ? sum(vs, "views") / vs.length : 0, seg: vs.length ? sum(vs, "new_followers") / vs.length : 0 };
+  });
+  const bestD = [...dm].sort((a, b) => b.reach - a.reach)[0], semanas = Math.round(hist.length / 7);
+  const sec2 = `<div class="card"><h3>Por día de la semana</h3><p class="hint">Alcance diario promedio en tus últimos ${hist.length} días (${semanas} semanas). Mejor día: <b>${DOW[bestD.d]}</b>.</p>
+    ${bars(dm.map((r) => ({ l: DOW[r.d], xl: DOW[r.d].slice(0, 3), v: r.reach, hi: r.d === bestD.d, tip: `${DOW[r.d]}: ${fmt(r.reach)} personas por día en promedio` })), { label: "Alcance promedio por día de la semana", every: 1 })}
+    <div class="tw" style="margin-top:12px"><table><thead><tr><th style="cursor:default">Día</th><th style="cursor:default">Alcance diario</th><th style="cursor:default">Seg. netos / día</th><th style="cursor:default">Videos publicados</th><th style="cursor:default">Vistas por video</th><th style="cursor:default">Seg. nuevos por video</th></tr></thead><tbody>
+    ${dm.map((r) => `<tr><td style="min-width:0"><b>${DOW[r.d]}</b></td><td>${fmt(r.reach)}</td><td>${fmt(r.net, 1)}</td><td>${r.nv}</td><td>${r.nv ? fmt(r.views) : "–"}</td><td>${r.nv ? fmt(r.seg, 1) : "–"}</td></tr>`).join("")}</tbody></table></div>
+    <p class="note">El alcance de un día depende también de lo publicado antes. Los promedios por video se basan en pocos videos por día: tómalos como pista, no como regla.</p></div>`;
+  const fm = [0, 1, 2, 3].map((f) => { const vs = all.filter((v) => franja(vhour(v)) === f), vv = vs.map((v) => v.views); return { f, n: vs.length, avg: vs.length ? sum(vs, "views") / vs.length : 0, med: median(vv), p25: quant(vv, 0.25), p75: quant(vv, 0.75), seg: vs.length ? sum(vs, "new_followers") / vs.length : 0 }; });
+  const bestF = [...fm].filter((r) => r.n >= 2).sort((a, b) => b.med - a.med)[0];
+  const sec3 = `<div class="card"><h3>Por franja de publicación</h3><p class="hint">Resultado de tus videos según la hora en que los subiste (hora local, videos con más de 2 días).${bestF ? ` Mejor franja hasta hoy: <b>${FR[bestF.f]}</b>.` : ""}</p>
+    <div class="tw"><table><thead><tr><th style="cursor:default">Franja</th><th style="cursor:default">Videos</th><th style="cursor:default">Vistas típicas</th><th style="cursor:default">Rango habitual</th><th style="cursor:default">Seg. nuevos por video</th></tr></thead><tbody>
+    ${fm.map((r) => `<tr><td style="min-width:0"><b>${FR[r.f]}</b></td><td>${r.n}${r.n < 3 ? ' <span class="tag warn">poca muestra</span>' : ""}</td><td>${r.n ? fmt(r.med) : "–"}</td><td>${r.n ? fmt(r.p25) + " a " + fmt(r.p75) : "–"}</td><td>${r.n ? fmt(r.seg, 1) : "–"}</td></tr>`).join("")}</tbody></table></div></div>`;
+  const vv = all.filter((v) => v.views >= 300).map((v) => v.views), sv = all.map((v) => v.new_followers);
+  const sec4 = vv.length >= 4 ? `<div class="card"><h3>Qué resultado puedes esperar por video</h3><p class="hint">Con tu historial reciente (${all.length} videos)</p>
+    <div class="stats">${statBox("Video típico", fmt(median(vv)) + " vistas", "mediana")}${statBox("Rango habitual", fmt(quant(vv, 0.25)) + " a " + fmt(quant(vv, 0.75)), "vistas, 50% de tus videos")}${statBox("Un buen día", fmt(quant(vv, 0.9)) + "+", "vistas, 1 de cada 10 videos")}${statBox("Seguidores nuevos", fmt(median(sv), 0) + " por video", "mediana; rango " + fmt(quant(sv, 0.25)) + " a " + fmt(quant(sv, 0.75)))}</div>
+    ${w ? `<p class="note">Plan sugerido: publica ${DOW[bestD.d]} u otro día fuerte, entre ${hh(w.s)} y ${hh(w.e)}, y espera un resultado típico de ${fmt(median(vv))} vistas.</p>` : ""}</div>` : "";
+  const grid = DOW_ORDER.map((d) => [0, 1, 2, 3].map((f) => { const vs = all.filter((v) => vdow(v) === d && franja(vhour(v)) === f); return { n: vs.length, m: vs.length ? median(vs.map((v) => v.views)) : 0 }; }));
+  const gmax = Math.max(...grid.flat().map((c) => c.m), 1);
+  const secH = `<div class="card"><h3>Mapa de calor: día y franja de publicación</h3><p class="hint">Vistas típicas (mediana) de tus videos según el día y la hora en que los subiste. Más oscuro, mejor resultado. Las celdas vacías son combinaciones que aún no probaste.</p>
+    <div class="heat"><span></span>${["Madrugada", "Mañana", "Tarde", "Noche"].map((f) => `<span class="h">${f}</span>`).join("")}${DOW_ORDER.map((d, i) => `<span class="d">${DOW[d]}</span>${grid[i].map((c) => { const t = c.m / gmax; return c.n ? `<div class="c" style="background:color-mix(in srgb, var(--accent) ${Math.round(12 + t * 80)}%, var(--bg));color:${t > 0.55 ? "#fff" : "var(--ink)"}" data-tip="${esc(DOW[d] + ": " + fmt(c.m) + " vistas típicas · " + c.n + " video" + (c.n > 1 ? "s" : ""))}"><b style="color:inherit">${compact(c.m)}</b><small>${c.n} video${c.n > 1 ? "s" : ""}</small></div>` : '<div class="c">–</div>'; }).join("")}`).join("")}</div>
+    <p class="note">Con pocos videos por celda, tómalo como pista. Prueba las celdas vacías en tu mejor ventana de horario.</p></div>`;
+  return `<div class="actions">${sec1}${sec2}${sec3}${secH}${sec4}</div>`;
+}
+
+const COLS = [
+  { k: "views", l: "Vistas", f: (v) => fmt(v.views) },
+  { k: "er", l: "Interacción", f: (v) => pct(v.er) },
+  { k: "share1k", l: "Compartidos / 1k", f: (v) => fmt(v.share1k, 1) },
+  { k: "fav1k", l: "Guardados / 1k", f: (v) => (v.favorites ? fmt(v.fav1k, 1) : "–") },
+  { k: "full_rate", l: "Lo ve completo", f: (v) => pct(v.full_rate) },
+  { k: "watchPct", l: "Tiempo visto", f: (v) => pct(v.watchPct, 0) + " · " + fmt(v.avg_watch, 1) + " s" },
+  { k: "new_followers", l: "Seg. nuevos", f: (v) => fmt(v.new_followers) },
+  { k: "segK", l: "Seg. / 1k vistas", f: (v) => fmt(v.segK, 1) },
+  { k: "pvK", l: "Visitas perfil / 1k", f: (v) => fmt(v.pvK, 1) },
+  { k: "no_seg", l: "No seguidores", f: (v) => (v.no_seg == null ? "–" : pct(v.no_seg, 0)) },
+];
+function videoList(x) {
+  const q = S.q.trim().toLowerCase(), k = S.sort.k;
+  const base = x.vids.filter((v) => !q || v.caption.toLowerCase().includes(q));
+  return [...base].sort((a, b) => ((a[k] ?? -1) > (b[k] ?? -1) ? 1 : -1) * S.sort.dir);
+}
+function videoTable(x) {
+  const list = videoList(x), el = x.all.filter((v) => v.views >= 1000 && maduro(v));
+  const topIds = new Set([...el].sort((a, b) => b.segK - a.segK).slice(0, 2).map((v) => v.id)), lowIds = new Set([...el].sort((a, b) => a.full_rate - b.full_rate).slice(0, 2).map((v) => v.id));
+  if (!list.length) return `<div class="card empty">No hay videos publicados en este rango${S.q ? " con esa búsqueda" : ""}. Amplía las fechas arriba.</div>`;
+  const th = (k, l) => `<th data-sort="${k}" ${S.sort.k === k ? `aria-sort="${S.sort.dir > 0 ? "ascending" : "descending"}"` : ""}>${l}${S.sort.k === k ? (S.sort.dir > 0 ? " ▲" : " ▼") : ""}</th>`;
+  return `<div class="tw"><table><thead><tr>${th("fecha", "Video")}${COLS.map((c) => th(c.k, c.l)).join("")}</tr></thead><tbody>${list.map((v) => {
+    const badge = topIds.has(v.id) ? '<span class="tag good">🏆 Replicar</span>' : lowIds.has(v.id) ? '<span class="tag warn">⚠ Revisar gancho</span>' : maduro(v) ? "" : '<span class="tag info">Nuevo</span>';
+    const open = S.open === v.id, src = v.fuentes ? Object.entries(v.fuentes).filter(([, p]) => p >= 0.005).sort((a, b) => b[1] - a[1]).map(([k, p]) => ({ l: FUENTE[k] || k, p })) : null;
+    return `<tr class="row" data-vid="${v.id}"><td><div class="cap">${badge}${esc(v.caption)}</div><div class="dt">${dFmt(v.fecha)} · ${fmt(v.dur)} s</div></td>${COLS.map((c) => `<td>${c.f(v)}</td>`).join("")}</tr>
+      ${open ? `<tr class="det"><td colspan="${COLS.length + 1}"><div class="grid2"><div><h3>¿Quién lo vio?</h3>${v.no_seg != null ? stack2(v.seg, v.no_seg, "Seguidores", "No te siguen") : '<p class="hint">Dato disponible tras la próxima actualización.</p>'}</div>
+      <div><h3>¿De dónde vienen las vistas?</h3>${src ? hbars(src.slice(0, 5), { d: 1, max: 1 }) : '<p class="hint">Dato disponible tras la próxima actualización.</p>'}</div></div>
+      <p class="note"><a href="${esc(v.url)}" target="_blank" rel="noopener" style="color:var(--accent-ink);font-weight:700">Ver el video en TikTok ↗</a> · ${fmt(v.likes)} me gusta · ${fmt(v.comments)} comentarios · ${fmt(v.shares)} compartidos${v.favorites ? " · " + fmt(v.favorites) + " guardados" : ""}</p></td></tr>` : ""}`; }).join("")}</tbody></table></div>`;
+}
+function pageVideos(x) {
+  const v = x.vids, el = v.filter((a) => a.views >= 500);
+  const best = (f, ok = el) => [...ok].sort((a, b) => f(b) - f(a))[0];
+  const cards = v.length ? `<div class="stats" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">${statBox("Videos publicados", fmt(v.length), "en este rango")}${statBox("Vistas totales", compact(sum(v, "views")), "promedio " + compact(sum(v, "views") / v.length))}
+    ${best((a) => a.segK) ? statBox("Más seguidores / 1k vistas", fmt(best((a) => a.segK).segK, 1), short(best((a) => a.segK).caption, 28)) : ""}${best((a) => a.full_rate) ? statBox("Mejor retención", pct(best((a) => a.full_rate).full_rate), short(best((a) => a.full_rate).caption, 28)) : ""}${best((a) => a.share1k) ? statBox("Más compartido / 1k", fmt(best((a) => a.share1k).share1k, 1), short(best((a) => a.share1k).caption, 28)) : ""}</div>` : "";
+  return `${cards}<div class="card" style="margin-bottom:12px"><h3>Mapa de videos: alcance vs. retención</h3><p class="hint">Dónde está cada video según sus vistas y cuánta gente lo ve completo</p>${scatter(v)}</div><div class="tools"><input type="search" id="vq" placeholder="Buscar en tus videos…" value="${esc(S.q)}" aria-label="Buscar videos"><select id="vs" aria-label="Ordenar por"><option value="fecha">Ordenar: más recientes</option>${COLS.map((c) => `<option value="${c.k}" ${S.sort.k === c.k ? "selected" : ""}>Ordenar: ${c.l}</option>`).join("")}</select><button class="btn" id="csv">Descargar CSV</button></div>
+  <div id="vtable">${videoTable(x)}</div><p class="note">Toca un video para ver quién lo vio y de dónde vienen las vistas. «/ 1k» significa por cada 1.000 vistas. Los videos con menos de 2 días siguen acumulando vistas, por eso se marcan como «Nuevo».</p>`;
+}
+function pageReco(x) {
+  const l = recomendaciones(x), g = (a, b) => l.filter((r) => r.pri >= a && r.pri <= b);
+  const blk = (t, hint, arr) => arr.length ? `<h2>${t}</h2><p class="hint">${hint}</p>${actionHTML(arr)}` : "";
+  return `<p class="hint" style="margin-top:0">Calculadas con tus datos reales. Haz <b>una</b> cosa de «Hazlo primero» esta semana; no hace falta hacerlas todas.</p>${blk("Hazlo primero", "Las que más mueven tu cuenta", g(1, 2))}${blk("Esta semana", "Mejoras de rutina", g(3, 3))}${blk("Para probar", "Oportunidades y aprendizajes", g(4, 9))}`;
+}
+const PAISES = (() => { try { return new Intl.DisplayNames(["es"], { type: "region" }); } catch (e) { return null; } })();
+function pageAudiencia() {
+  const a = DATA.audiencia;
+  if (!a || (!a.paises?.length && !a.generos?.length)) return '<div class="card empty">Los datos de audiencia aparecerán tras la próxima actualización diaria.</div>';
+  const G = { Male: "Hombres", Female: "Mujeres", Other: "Otro" };
+  const gen = (a.generos || []).filter((g) => g.p > 0).map((g) => ({ l: G[g.k] || g.k, p: g.p }));
+  const pais = (a.paises || []).slice(0, 9).map((p) => ({ l: p.k === "Others" ? "Otros países" : (PAISES && PAISES.of(p.k)) || p.k, p: p.p }));
+  const edad = (a.edades || []).sort((x, y) => x.k.localeCompare(y.k)).map((e) => ({ l: e.k, p: e.p }));
+  const ciu = (a.ciudades || []).slice(0, 10).map((c) => { // Windsor entrega "PE Lima" o "MX Other"
+    const m = /^([A-Z]{2}) (.+)$/.exec(c.k), ciudad = m ? (m[2] === "Other" ? "Otras ciudades" : m[2]) : c.k, pa = m && PAISES ? PAISES.of(m[1]) : "";
+    return { l: pa ? `${ciudad} (${pa})` : ciudad, p: c.p };
+  });
+  const blk = (t, items, d) => items.length ? `<div class="card"><h3>${t}</h3><p class="hint">Porcentaje de tus seguidores</p>${hbars(items, { d: d ?? 0, max: 1 })}</div>` : "";
+  return `<div class="grid2">${blk("Género", gen)}${blk("Edades", edad)}${blk("Países", pais, 1)}${blk("Ciudades", ciu, 1)}</div>
+  <p class="note">Estos datos describen a tus seguidores de la última semana. Úsalos para decidir el tono, los ejemplos, el horario y los países a los que apuntas con tus ofertas.</p>`;
+}
+
+/* ---------- Fórmula TikTok: principios + tus propios datos ---------- */
+const STOP = new Set(["para", "como", "cómo", "con", "los", "las", "una", "que", "por", "del", "tus", "sus", "este", "esta", "esto", "más", "muy", "pero", "gratis", "video", "videos", "ahora", "todo", "todos", "tiene", "puedes", "desde", "entre", "sobre", "donde", "cuando", "hacer", "tienes", "solo", "mejor", "mejores"]);
+const tagsOf = (v) => (v.caption.match(/#[\p{L}\p{N}_]+/gu) || []).map((t) => t.toLowerCase());
+function apertura(c) {
+  const t = c.replace(/^[^\p{L}\p{N}¿]+/u, "").trim(), ini = t.slice(0, 90);
+  if (/^¿/.test(t) || /\?/.test(ini)) return "Pregunta";
+  if (/^\d+\s/.test(t) || /\b\d+\s+(skills|errores|formas|pasos|tips|razones|herramientas|p[aá]ginas|ideas|consejos)/i.test(ini)) return "Lista o número";
+  if (/^(c[oó]mo|aprende|crea|haz|usa|descubre)\b/i.test(t)) return "Cómo hacer / tutorial";
+  if (/(urgente|atenci[oó]n|ojo|cuidado|elimin|nuevo|ya puedes|acaba de|se acab)/i.test(ini)) return "Alerta o novedad";
+  return "Afirmación directa";
+}
+function gstat(list) {
+  if (!list.length) return null;
+  const tv = sum(list, "views");
+  return { n: list.length, med: median(list.map((v) => v.views)), ret: median(list.map((v) => v.full_rate)), watch: median(list.map((v) => v.watchPct)), segK: tv ? (sum(list, "new_followers") / tv) * 1000 : 0, share: tv ? (sum(list, "shares") / tv) * 1000 : 0 };
+}
+function gtable(title, hint, rows, note) {
+  const okRows = rows.filter((r) => r.s && r.s.n >= 2), best = okRows.length ? [...okRows].sort((a, b) => b.s.segK - a.s.segK)[0] : null;
+  if (!rows.length) return "";
+  return `<div class="card"><h3>${title}</h3><p class="hint">${hint}</p><div class="tw"><table class="plain"><thead><tr><th>Grupo</th><th>Videos</th><th>Vistas típicas</th><th>Lo ve completo</th><th>Tiempo visto</th><th>Seg. / 1k vistas</th><th>Compart. / 1k</th></tr></thead><tbody>
+    ${rows.map((r) => `<tr><td><b>${esc(r.l)}</b> ${best && r === best ? '<span class="tag good">🏆 Mejor conversión</span>' : ""}${r.s.n < 2 ? ' <span class="tag warn">poca muestra</span>' : ""}</td><td>${r.s.n}</td><td>${fmt(r.s.med)}</td><td>${pct(r.s.ret)}</td><td>${pct(r.s.watch, 0)}</td><td>${fmt(r.s.segK, 1)}</td><td>${fmt(r.s.share, 1)}</td></tr>`).join("")}</tbody></table></div>${note ? `<p class="note">${note}</p>` : ""}</div>`;
+}
+function pageFormula(x) {
+  const all = x.all.filter((v) => maduro(v) && v.views >= 300), n = all.length, w = ventana(DATA.actividad);
+  const med = (f) => median(all.map(f)), com1k = (v) => (v.views ? (v.comments / v.views) * 1000 : 0);
+  const SIG = [
+    { s: "Retención y tiempo visto", p: "Que la gente se quede hasta el final, y mejor aún, que lo repita. Es la señal que más se menciona como decisiva.", m: n ? `Tú: ${pct(med((v) => v.full_rate))} lo ve completo · ${pct(med((v) => v.watchPct), 0)} del video en promedio` : "–" },
+    { s: "Compartidos", p: "Compartir dice «esto vale la pena». Además lleva tu video a gente nueva.", m: n ? `Tú: ${fmt(med((v) => v.share1k), 1)} por cada 1.000 vistas` : "–" },
+    { s: "Guardados", p: "Indican utilidad: tutoriales, listas, plantillas que la gente quiere volver a ver.", m: n ? `Tú: ${fmt(med((v) => v.fav1k), 1)} por cada 1.000 vistas` : "–" },
+    { s: "Comentarios", p: "Conversación real. Responder comentarios extiende la vida del video.", m: n ? `Tú: ${fmt(med(com1k), 1)} por cada 1.000 vistas` : "–" },
+    { s: "Seguir desde el video", p: "Señal de que aportas valor repetible, no solo entretenimiento de una vez.", m: n ? `Tú: ${fmt(med((v) => v.segK), 1)} seguidores por cada 1.000 vistas` : "–" },
+    { s: "Me gusta", p: "Es una señal rápida y fácil de dar, por eso suele pesar menos que las anteriores.", m: n ? `Tú: ${pct(med((v) => (v.views ? v.likes / v.views : 0)))} de las vistas` : "–" },
+  ];
+  const edu = `<div class="card"><h3>Cómo decide TikTok a quién mostrar tu video</h3><p class="hint">TikTok no publica pesos exactos. Esto resume sus principios generales y lo que se observa en la práctica; lo valioso es medirlos en tu propia cuenta.</p>
+    <div class="grid2" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">${[
+      ["1 · Prueba", "Tu video se muestra a un grupo pequeño de personas con intereses parecidos al tema."],
+      ["2 · Señales", "Mide qué hacen: ¿se quedan?, ¿lo repiten?, ¿comparten, guardan, comentan, te siguen?"],
+      ["3 · Expansión", "Si las señales son buenas, lo muestra a un grupo mayor. Si no, se detiene. Se repite por oleadas."],
+      ["4 · Vida larga", "Un video útil puede volver a circular semanas después, sobre todo por búsqueda y por el tema."],
+    ].map((s) => `<div class="stat"><div class="v" style="font-size:15px">${s[0]}</div><div class="s" style="font-size:12.5px;color:var(--ink2);margin-top:4px">${s[1]}</div></div>`).join("")}</div>
+    <div class="tw" style="margin-top:14px"><table class="plain"><thead><tr><th>Señal</th><th>Por qué importa</th><th>Tu cuenta</th></tr></thead><tbody>${SIG.map((s) => `<tr><td><b>${s.s}</b></td><td style="white-space:normal;min-width:220px">${s.p}</td><td style="white-space:normal;min-width:180px">${s.m}</td></tr>`).join("")}</tbody></table></div>
+    <p class="note">Orden práctico: primero retención, luego compartidos y guardados, y al final los me gusta. Los números «Tú» son la mediana de tus últimos ${n} videos.</p></div>`;
+  if (n < 6) return `<div class="actions">${edu}<div class="card empty">Para calcular tu fórmula personal necesito al menos 6 videos con más de 2 días de publicados. Sigue publicando y esta hoja se llenará sola.</div></div>`;
+
+  // ganadores vs resto
+  const rk = (f) => { const s = [...all].sort((a, b) => f(a) - f(b)); return new Map(s.map((v, i) => [v.id, i / (n - 1)])); }, rv = rk((v) => v.views), rs = rk((v) => v.segK);
+  const sorted = [...all].sort((a, b) => rv.get(b.id) * 0.5 + rs.get(b.id) * 0.5 - (rv.get(a.id) * 0.5 + rs.get(a.id) * 0.5)), k = Math.max(3, Math.round(n * 0.25)), win = sorted.slice(0, k), rest = sorted.slice(k);
+  const inW = (v) => (w ? [0, 1, 2].some((j) => (w.s + j) % 24 === vhour(v)) : false);
+  const TR = [
+    { l: "Duración", f: (v) => v.dur, fm: (q) => fmt(q) + " s" }, { l: "Lo ve completo", f: (v) => v.full_rate, fm: (q) => pct(q) }, { l: "Tiempo visto (% del video)", f: (v) => v.watchPct, fm: (q) => pct(q, 0) },
+    { l: "Compartidos / 1k vistas", f: (v) => v.share1k, fm: (q) => fmt(q, 1) }, { l: "Guardados / 1k vistas", f: (v) => v.fav1k, fm: (q) => fmt(q, 1) }, { l: "Comentarios / 1k vistas", f: com1k, fm: (q) => fmt(q, 1) },
+    { l: "Largo del texto (palabras)", f: (v) => v.caption.split(/\s+/).length, fm: (q) => fmt(q) },
+  ];
+  const trs = TR.map((t) => { const a = median(win.map(t.f)), b = median(rest.map(t.f)), r = b ? a / b : 1; return { ...t, a, b, r }; });
+  const dif = [...trs].sort((p, q) => Math.abs(Math.log(q.r || 1)) - Math.abs(Math.log(p.r || 1))).slice(0, 2).filter((t) => Math.abs(t.r - 1) > 0.15);
+  const winW = w ? win.filter(inW).length / win.length : null, restW = w && rest.length ? rest.filter(inW).length / rest.length : null;
+  const sec2 = `<div class="card"><h3>Tu fórmula ganadora</h3><p class="hint">Comparé tus ${win.length} mejores videos (mezcla de vistas y seguidores ganados) con el resto de tus ${n}. Así se ve lo que hacen distinto.</p>
+    <div class="tw"><table class="plain"><thead><tr><th>Rasgo</th><th>Tus mejores</th><th>El resto</th><th>Lectura</th></tr></thead><tbody>${trs.map((t) => `<tr><td><b>${t.l}</b></td><td>${t.fm(t.a)}</td><td>${t.fm(t.b)}</td><td>${t.r > 1.15 ? '<span class="good-t">▲ más alto en tus mejores</span>' : t.r < 0.87 ? '<span class="bad-t">▼ más bajo en tus mejores</span>' : '<span style="color:var(--ink3)">• parecido</span>'}</td></tr>`).join("")}
+    ${winW !== null && restW !== null ? `<tr><td><b>Publicados en tu mejor ventana</b></td><td>${pct(winW, 0)}</td><td>${pct(restW, 0)}</td><td>${winW > restW + 0.1 ? '<span class="good-t">▲ el horario ayuda</span>' : '<span style="color:var(--ink3)">• sin diferencia clara</span>'}</td></tr>` : ""}</tbody></table></div>
+    ${dif.length ? `<p class="note"><b>Lectura rápida:</b> ${dif.map((t) => `en tus mejores videos «${t.l.toLowerCase()}» es ${t.r > 1 ? "más alto" : "más bajo"} (${t.fm(t.a)} vs. ${t.fm(t.b)})`).join("; ")}.</p>` : '<p class="note">Tus mejores videos no se diferencian mucho del resto en estos rasgos: el tema y el gancho pueden pesar más.</p>'}</div>`;
+
+  // temas
+  let tagMap = {}; all.forEach((v) => tagsOf(v).forEach((t) => (tagMap[t] ||= new Set()).add(v.id)));
+  let topics = Object.entries(tagMap).filter(([, s]) => s.size >= 2 && s.size <= n * 0.7).sort((a, b) => b[1].size - a[1].size).slice(0, 8).map(([t, s]) => ({ l: t, s: gstat(all.filter((v) => s.has(v.id))) }));
+  let origen = "hashtags";
+  if (topics.length < 2) {
+    const wm = {}; all.forEach((v) => new Set((v.caption.toLowerCase().match(/[\p{L}]{6,}/gu) || []).filter((q) => !STOP.has(q))).forEach((q) => (wm[q] ||= new Set()).add(v.id)));
+    topics = Object.entries(wm).filter(([, s]) => s.size >= 2 && s.size <= n * 0.6).sort((a, b) => b[1].size - a[1].size).slice(0, 8).map(([t, s]) => ({ l: t, s: gstat(all.filter((v) => s.has(v.id))) })); origen = "palabras clave";
+  }
+  const sec3 = gtable("Tus temas", `Agrupé tus videos por ${origen} de la descripción. Un tema con buenas vistas y buena conversión es el que debes repetir.`, topics, "Un video puede aparecer en varios temas. Los hashtags que usas en casi todos tus videos se ignoran porque no distinguen entre ellos.");
+  const dur = [["Cortos (menos de 30 s)", (v) => v.dur < 30], ["Medios (30 a 60 s)", (v) => v.dur >= 30 && v.dur < 60], ["Largos (más de 60 s)", (v) => v.dur >= 60]].map(([l, f]) => ({ l, s: gstat(all.filter(f)) })).filter((r) => r.s);
+  const sec4 = gtable("Duración", "Cuánto dura el video que mejor te funciona. Si dura más, mira el «Tiempo visto»: indica si el contenido sostiene a la gente.", dur);
+  const ap = {}; all.forEach((v) => (ap[apertura(v.caption)] ||= []).push(v));
+  const apRows = Object.entries(ap).map(([l, vs]) => ({ l, s: gstat(vs) })).sort((a, b) => b.s.n - a.s.n);
+  const sec5 = gtable("Gancho: cómo empieza tu video", "Clasifiqué cómo empieza la descripción de cada video. Suele repetir el gancho que dices en voz alta, pero es una pista, no una medición exacta de los primeros 3 segundos.", apRows, "TikTok no entrega la curva de retención por segundo; por eso el gancho se mide con «Lo ve completo» y «Tiempo visto».");
+
+  // diagnóstico por video
+  const mV = median(all.map((v) => v.views)), mR = median(all.map((v) => v.full_rate)), mS = median(all.map((v) => v.share1k)), mG = median(all.map((v) => v.segK));
+  const diag = (v) => {
+    let d;
+    if (v.views >= mV && v.full_rate >= mR) d = { c: "good", t: "Ganador: replícalo" };
+    else if (v.views < mV && v.full_rate >= mR) d = { c: "info", t: "Buen contenido, poca distribución: prueba otro tema, título u horario" };
+    else if (v.views >= mV) d = { c: "warn", t: "Mucho alcance pero se van rápido: refuerza el gancho y el ritmo" };
+    else d = { c: "bad", t: "Poco alcance y poca retención: cambia el tema y el gancho" };
+    const ex = []; if (mS && v.share1k >= mS * 1.5) ex.push("muy compartible"); if (mG && v.segK >= mG * 1.5) ex.push("convierte en seguidores");
+    return { ...d, ex };
+  };
+  const sec6 = `<div class="card"><h3>Diagnóstico de tus videos recientes</h3><p class="hint">Cada video comparado con tu propia mediana (${fmt(mV)} vistas, ${pct(mR)} lo ve completo).</p><div class="actions">${[...all].sort((a, b) => b.fecha.localeCompare(a.fecha)).slice(0, 8).map((v) => { const d = diag(v); return `<div class="action" style="padding:10px 0;border-top:1px solid var(--line)"><div><b style="font-size:13.5px">${esc(short(v.caption, 80))}</b><span><span class="tag ${d.c}">${d.t.split(":")[0]}</span>${d.t.includes(":") ? d.t.split(":").slice(1).join(":").trim() : ""} ${d.ex.map((e) => `<span class="tag info">${e}</span>`).join("")}</span><span class="why">${fmt(v.views)} vistas · ${pct(v.full_rate)} lo ve completo · ${fmt(v.watchPct * 100)}% del video visto · ${fmt(v.segK, 1)} seg. por 1k vistas</span></div></div>`; }).join("")}</div></div>`;
+
+  // plan de la semana
+  const okT = topics.filter((t) => t.s.n >= 2).sort((a, b) => b.s.segK - a.s.segK)[0], okD = [...dur].filter((r) => r.s.n >= 2).sort((a, b) => b.s.med - a.s.med)[0], okA = apRows.filter((r) => r.s.n >= 2).sort((a, b) => b.s.segK - a.s.segK)[0];
+  const plan = [
+    okT ? `Haz 1 video del tema <b>${esc(okT.l)}</b>, el que mejor convierte vistas en seguidores (${fmt(okT.s.segK, 1)} por 1.000).` : null,
+    okD ? `Apunta a una duración de <b>${esc(okD.l.toLowerCase())}</b>, donde tus vistas típicas son ${fmt(okD.s.med)}.` : null,
+    okA ? `Abre con una <b>${esc(okA.l.toLowerCase())}</b> en la primera frase y en la descripción.` : null,
+    w ? `Publica entre <b>${hh(w.s)} y ${hh(w.e)}</b>, cuando más seguidores tuyos están conectados.` : null,
+    "Cierra pidiendo <b>guardar o compartir</b> si es útil, o <b>seguirte</b> si es parte de una serie.",
+  ].filter(Boolean);
+  const sec7 = `<div class="card"><h3>Tu plan para el próximo video</h3><p class="hint">Armado con lo que mejor te funcionó hasta hoy</p><div class="narr"><ul>${plan.map((p) => `<li><span>${p}</span></li>`).join("")}</ul></div>
+    <h3 style="margin-top:18px">Lista antes de publicar</h3><div class="narr"><ul>${["Los primeros 3 segundos prometen un resultado o plantean un problema claro.", "Una sola idea por video; quita pausas y relleno.", "Aporta algo que valga la pena guardar o compartir.", "La descripción incluye las palabras que tu cliente buscaría.", "Terminas con un llamado: guardar, compartir, seguir o ir al enlace.", "Responderás los comentarios en la primera hora."].map((p) => `<li><span>${p}</span></li>`).join("")}</ul></div></div>`;
+  return `<div class="actions">${edu}${sec2}${sec3}${sec4}${sec5}${sec6}${sec7}</div>`;
+}
+
+/* ---------- estructura, navegación y rango ---------- */
+const ICON = {
+  resumen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>',
+  horario: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  videos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M10 9.5v5l4.5-2.5z"/></svg>',
+  recomendaciones: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>',
+  formula: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6.2L4.6 18.4A2 2 0 0 0 6.3 21h11.4a2 2 0 0 0 1.7-2.6L14 9.2V3"/><path d="M7.5 15h9"/></svg>',
+  audiencia: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.4 3-5.5 6.5-5.5s5.9 2.1 6.5 5.5"/><path d="M16 4.7a3.5 3.5 0 0 1 0 6.6M18.5 14.7c1.6.8 2.7 2.5 3 5.3"/></svg>',
+};
+const PAGES = [
+  { id: "resumen", l: "Resumen", sub: "Cómo va tu cuenta en el rango elegido", fn: pageResumen },
+  { id: "horario", l: "Mejor horario", s: "Horario", sub: "Cuándo publicar y qué resultado esperar", fn: pageHorario, noRange: true },
+  { id: "videos", l: "Videos", sub: "El rendimiento de cada video publicado en el rango", fn: pageVideos },
+  { id: "recomendaciones", l: "Recomendaciones", s: "Consejos", sub: "Qué hacer, ordenado por importancia", fn: pageReco },
+  { id: "formula", l: "Fórmula TikTok", s: "Fórmula", sub: "Cómo funciona el algoritmo y qué le funciona a tu cuenta", fn: pageFormula, noRange: true },
+  { id: "audiencia", l: "Audiencia", sub: "Quiénes son tus seguidores", fn: pageAudiencia, noRange: true },
+];
+function setRange(from, to) {
+  if (from > to) [from, to] = [to, from];
+  S.from = from < MIN ? MIN : from > MAX ? MAX : from; S.to = to > MAX ? MAX : to < MIN ? MIN : to;
+  try { localStorage.setItem("rango", JSON.stringify([S.from, S.to])); } catch (e) {}
+  renderToolbar(); renderPage();
+}
+const PRESETS = [
+  { l: "7 días", f: () => [addD(MAX, -6), MAX] }, { l: "14 días", f: () => [addD(MAX, -13), MAX] }, { l: "30 días", f: () => [addD(MAX, -29), MAX] },
+  { l: "60 días", f: () => [addD(MAX, -59), MAX] }, { l: "Este mes", f: () => [MAX.slice(0, 8) + "01", MAX] },
+  { l: "Mes pasado", f: () => { const d = new Date(Date.parse(MAX.slice(0, 8) + "01T12:00:00Z") - 864e5).toISOString().slice(0, 10); return [d.slice(0, 8) + "01", d]; } },
+  { l: "Todo", f: () => [MIN, MAX] },
+];
+function renderToolbar() {
+  const pg = PAGES.find((p) => p.id === S.page);
+  $("#range").style.display = pg.noRange ? "none" : "flex";
+  $("#range").innerHTML = `<div class="chips" role="group" aria-label="Rangos rápidos">${PRESETS.map((p, i) => { const [a, b] = p.f(); return `<button data-preset="${i}" aria-pressed="${a === S.from && b === S.to}">${p.l}</button>`; }).join("")}</div>
+    <div class="dates"><label for="dFrom">Desde</label><input type="date" id="dFrom" min="${MIN}" max="${MAX}" value="${S.from}"><label for="dTo">hasta</label><input type="date" id="dTo" min="${MIN}" max="${MAX}" value="${S.to}"></div>`;
+}
+function renderNav() {
+  $("#nav").innerHTML = PAGES.map((p) => `<button data-page="${p.id}" ${p.id === S.page ? 'aria-current="page"' : ""}>${ICON[p.id]}<span class="full">${p.l}</span><span class="short">${p.s || p.l}</span></button>`).join("");
+}
+function renderPage() {
+  const pg = PAGES.find((p) => p.id === S.page);
+  $("#title").textContent = pg.l;
+  $("#sub").textContent = pg.noRange ? pg.sub : `${pg.sub} · ${dFmt(S.from, { day: "numeric", month: "short", year: "numeric" })} al ${dFmt(S.to, { day: "numeric", month: "short", year: "numeric" })}`;
+  const x = ctx();
+  if (!pg.noRange && !x.rows.length) { $("#content").innerHTML = '<div class="card empty">No hay datos en ese rango. Elige otras fechas.</div>'; return; }
+  $("#content").innerHTML = pg.fn(x);
+  if (S.page === "resumen") $("#kdetail").innerHTML = kdetail(x);
+}
+function go(id) { S.page = id; try { history.replaceState(null, "", "#" + id); } catch (e) {} renderNav(); renderToolbar(); renderPage(); window.scrollTo(0, 0); }
+
+document.addEventListener("click", (e) => {
+  const t = e.target;
+  let b;
+  if ((b = t.closest("[data-page]"))) return go(b.dataset.page);
+  if ((b = t.closest("[data-go]"))) return go(b.dataset.go);
+  if ((b = t.closest("[data-preset]"))) { const [a, z] = PRESETS[+b.dataset.preset].f(); return setRange(a, z); }
+  if ((b = t.closest("[data-metric]"))) { S.metric = b.dataset.metric; return renderPage(); }
+  if ((b = t.closest("[data-kpi]"))) { S.kpi = S.kpi === b.dataset.kpi ? null : b.dataset.kpi; renderPage(); return; }
+  if ((b = t.closest("[data-sort]"))) { const k = b.dataset.sort; S.sort = { k, dir: S.sort.k === k ? -S.sort.dir : -1 }; return redrawVideos(); }
+  if ((b = t.closest("[data-vid]"))) { S.open = S.open === b.dataset.vid ? null : b.dataset.vid; return redrawVideos(); }
+  if (t.id === "csv") return exportCsv();
+  if ((b = t.closest("[data-act]"))) {
+    const a = b.dataset.act;
+    if (a === "print") return window.print();
+    if (a === "full") return document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(() => {});
+    if (a === "theme") { const order = ["auto", "dark", "light"], cur = document.documentElement.dataset.theme || "auto"; setTheme(order[(order.indexOf(cur) + 1) % 3]); }
+  }
+});
+function setTheme(t) {
+  if (t === "auto") delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t;
+  try { localStorage.setItem("tema", t); } catch (e) {}
+  const el = $("#themeTxt"); if (el) el.textContent = t === "dark" ? "Oscuro" : t === "light" ? "Claro" : "Auto";
+}
+try { const t = localStorage.getItem("tema"); if (t) setTheme(t); } catch (e) {}
+document.addEventListener("input", (e) => {
+  const t = e.target;
+  if (t.id === "vq") { S.q = t.value; redrawVideos(); }
+  if (t.id === "goalIn") { try { localStorage.setItem("meta-" + S.to.slice(0, 7), t.value); } catch (er) {} clearTimeout(window._g); window._g = setTimeout(renderPage, 500); }
+});
+document.addEventListener("change", (e) => {
+  const t = e.target;
+  if (t.id === "dFrom" || t.id === "dTo") { const f = $("#dFrom").value, z = $("#dTo").value; if (f && z) setRange(f, z); }
+  if (t.id === "vs") { S.sort = { k: t.value, dir: -1 }; redrawVideos(); }
+});
+function redrawVideos() { const el = $("#vtable"); if (el) el.innerHTML = videoTable(ctx()); }
+function exportCsv() {
+  const list = videoList(ctx()), cols = ["Fecha", "Descripción", "Vistas", "Me gusta", "Comentarios", "Compartidos", "Guardados", "Lo ve completo", "Seguidores nuevos", "Seguidores por 1000 vistas", "Visitas al perfil"];
+  const q = (s) => '"' + String(s).replace(/"/g, '""') + '"';
+  const csv = [cols.join(","), ...list.map((v) => [v.fecha, q(v.caption), v.views, v.likes, v.comments, v.shares, v.favorites, v.full_rate, v.new_followers, v.segK.toFixed(2), v.profile_views].join(","))].join("\n");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv" })); a.download = "videos-tiktok.csv"; a.click();
+}
+const tip = $("#tip");
+document.addEventListener("mousemove", (e) => {
+  const el = e.target.closest && e.target.closest("[data-tip]");
+  if (!el) { tip.style.opacity = 0; return; }
+  tip.textContent = el.dataset.tip; tip.style.opacity = 1; tip.style.left = Math.min(e.clientX + 12, innerWidth - tip.offsetWidth - 8) + "px"; tip.style.top = e.clientY + 14 + "px";
+});
+document.addEventListener("click", (e) => { const el = e.target.closest && e.target.closest("[data-tip]"); if (el && matchMedia("(hover:none)").matches) { tip.textContent = el.dataset.tip; tip.style.opacity = 1; tip.style.left = Math.max(8, Math.min(e.clientX - 40, innerWidth - 200)) + "px"; tip.style.top = e.clientY - 40 + "px"; } });
+window.addEventListener("hashchange", () => { const id = location.hash.slice(1); if (PAGES.some((p) => p.id === id) && id !== S.page) go(id); });
+
+fetch("data.json?v=" + Date.now()).then((r) => r.json()).then((d) => {
+  if (!d.diario || d.diario.length < 3) throw new Error("Aún no hay suficientes datos");
+  DATA = d; OFF = typeof d.tz_offset === "number" ? d.tz_offset : -5; MIN = d.diario[0].date; MAX = d.diario.at(-1).date;
+  $("#brandName").textContent = d.cuenta; $("#brandUser").textContent = d.usuario ? "@" + d.usuario : "TikTok";
+  const hrs = Math.round((Date.now() - Date.parse(d.actualizado)) / 36e5);
+  $("#foot").textContent = `Datos al ${dFmt(MAX, { day: "numeric", month: "long" })}. Actualizado ${hrs < 1 ? "hace minutos" : hrs < 24 ? "hace " + hrs + " h" : "hace " + Math.round(hrs / 24) + " días"}.`;
+  $("#sub").textContent = "";
+  if (d.demo) $("#banner").innerHTML = '<div class="banner">Estás viendo datos de ejemplo. Tras la primera actualización real aparecerán tus datos.</div>';
+  const h = location.hash.slice(1); if (PAGES.some((p) => p.id === h)) S.page = h;
+  let r = null; try { r = JSON.parse(localStorage.getItem("rango") || "null"); } catch (e) {}
+  const [a, z] = r && r[0] >= MIN && r[1] <= MAX && r[0] <= r[1] ? r : PRESETS[2].f();
+  S.from = a < MIN ? MIN : a; S.to = z;
+  renderNav(); renderToolbar(); renderPage();
+}).catch((e) => { $("#content").innerHTML = `<div class="card empty">No pude cargar los datos.<br><small>${esc(e.message)}</small></div>`; });
+</script>
+</body>
+</html>
